@@ -12,22 +12,48 @@ public class PlayerManagerS : MonoBehaviour
     Vector3 test = new Vector3(0, 0, 0);
 
     //Raycast
-    public Camera main;
-    RaycastHit2D hit;
+
+
+
+    LayerMask RaycastMask;
+
+
+
     Vector2 mousePos = new Vector2();
     Vector3 point = new Vector3();
+
+    private void Awake()
+    {
+        RaycastMask = LayerMask.GetMask("goPosition");
+
+    }
 
     private void Start()
     {
         
     }
 
-
-
     private void Update()
     {
         PlayerWalk();
         RayCast();
+
+    }
+
+    private void RayCast()
+    {
+        RaycastHit hit;
+
+        if(Physics.Raycast(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward), out hit, RaycastMask))
+        {
+            Debug.DrawRay(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
+            print("Did hit");
+        }
+        else
+        {
+            Debug.DrawRay(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward) * 100, Color.white);
+            print("Didont hit");
+        }
 
     }
 
@@ -56,12 +82,5 @@ public class PlayerManagerS : MonoBehaviour
         test = new Vector3(0, 0, 0);
     }
     
-    private void RayCast()
-    {
-        mousePos = Mouse.current.position.ReadValue();
-        point = main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 10));
-        hit = Physics2D.Raycast(transform.position, point);
-        Debug.Log(hit.collider);
-        Debug.DrawRay(transform.position, point);
-    }
+
 }

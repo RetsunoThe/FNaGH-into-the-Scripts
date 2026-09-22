@@ -1,17 +1,17 @@
-using System.Threading;
-using Unity.VisualScripting;
-using Unity.VisualScripting.FullSerializer;
+
+using NUnit.Framework;
+using Unity.Mathematics;
+using Unity.VisualScripting.ReorderableList.Element_Adder_Menu;
 using UnityEngine;
-using UnityEngine.Assemblies;
 using UnityEngine.InputSystem;
 
 public class PlayerManagerS : MonoBehaviour
 {
 
     //Holding Objects
-    bool holdingObject = false;
-    GameObject heldObject;
-    Transform heldObjectReturn;
+    public bool holdingObject = false;
+    public GameObject heldObject;
+    Vector3 heldObjectReturn;
     
     //Cameras
     bool inCamera = false;
@@ -32,29 +32,43 @@ public class PlayerManagerS : MonoBehaviour
 
     //Raycast
     GameObject hitObject;
-    GameObject hitObjectPosition;
+    public GameObject hitObjectPosition;
     LayerMask RaycastMask;
 
     //Position checks
-    bool inPosition = false;
+    public bool inPosition = false;
     inPositionS _inPositionReturnS;
     Transform _inPositionReturn;
+
+    //Flashlight
+    public bool isFlashlightOn = false;
 
 
 
     private void Awake()
     {
         RaycastMask = LayerMask.GetMask("raycastObject");
+        cameras = GameObject.FindGameObjectsWithTag("playerCameras");
+
     }
     private void Start()
     {
-        cameras = GameObject.FindGameObjectsWithTag("playerCameras");
     }
 
 
 
     private void Update()
     {
+
+        //Flashlight
+        if (Keyboard.current.fKey.isPressed)
+        {
+            isFlashlightOn = true;
+        }
+        else
+        {
+            isFlashlightOn = false;
+        }
 
         //Walking
         if (canWalk == true)
@@ -69,6 +83,8 @@ public class PlayerManagerS : MonoBehaviour
             _inPositionReturn = _inPositionReturnS.inPositionReturn;
 
             transform.position = _inPositionReturn.transform.position;
+
+            hitObjectPosition = null;
 
             inPosition = false;
             canWalk = true;
@@ -113,11 +129,11 @@ public class PlayerManagerS : MonoBehaviour
 
             if (Keyboard.current.eKey.wasPressedThisFrame)
             {
-                heldObject.transform.position = heldObjectReturn.position;
-                heldObject.transform.rotation = heldObjectReturn.rotation;
+                heldObject.transform.position = heldObjectReturn;
+                heldObject.transform.rotation = quaternion.Euler(0, 0, 0);
                 
                 heldObject = null;
-                heldObjectReturn = null;
+                heldObjectReturn = new Vector3();
                 
                 holdingObject = false;
             }
@@ -177,7 +193,7 @@ public class PlayerManagerS : MonoBehaviour
                 {
                     heldObject = hitObject;
                 }
-                heldObjectReturn = heldObject.transform;
+                heldObjectReturn = heldObject.transform.position;
                 holdingObject = true;
                 
             }

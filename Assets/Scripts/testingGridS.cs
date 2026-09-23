@@ -1,18 +1,26 @@
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using CodeMonkey.Utils;
+using UnityEngine.Diagnostics;
 
 public class testingGridS : MonoBehaviour
 {
-    int finall = 1;
-    Vector3 animatronicPosition;
-    Vector3 destination;
+
+    private GridF pathFinding;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        GridF gridPathfind = new GridF(10, 5, 2f);
+        pathFinding = new GridF(5, 5, 5f);
 
-        //Omg finally I can  git in peace
+        pathFinding.SetValue(2, 2, 10);
+
+        if(Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            pathFinding.SetValue(UtilsClass.GetMouseWorldPositionWithZ(), 20);
+        }
+         
 
 
     }

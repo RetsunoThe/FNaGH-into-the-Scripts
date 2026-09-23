@@ -7,12 +7,19 @@ using UnityEngine.Diagnostics;
 public class testingGridS : MonoBehaviour
 {
 
-    private GridF pathFinding;
+    [SerializeField] private HeatMapS HeatMapS;
+    public GridF pathFinding;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        pathFinding = new GridF(5, 5, 5f);
+
+
+        pathFinding = new GridF(5, 5, 2f, new Vector3(0, 0));
+
+        HeatMapS.SetGrid(pathFinding);
+
+
 
         pathFinding.SetValue(2, 2, 10);
 

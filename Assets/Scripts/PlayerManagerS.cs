@@ -155,6 +155,7 @@ public class PlayerManagerS : MonoBehaviour
 
     private void RayCast()
     {
+        
         RaycastHit hit;
 
         if(Physics.Raycast(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, RaycastMask))

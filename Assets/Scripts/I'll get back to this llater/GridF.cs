@@ -5,6 +5,15 @@ using System;
 
 public class GridF<TGridObject>
 {
+
+    public event EventHandler<OnGridObjectChangedEventArgs> OnGridObjectChanged;
+    public class OnGridObjectChangedEventArgs : EventArgs
+    {
+        public int x;
+        public int y;
+    }
+
+
     private int width;
     private int height;
     private float cellSize;
@@ -16,7 +25,7 @@ public class GridF<TGridObject>
     public const int MAX_VALUE = 5;
     public const int MIN_VALUE = 0;
 
-    public GridF(int width, int height, float cellSize, Vector3 originPosition, Func<TGridObject> createGridObject)
+    public GridF(int width, int height, float cellSize, Vector3 originPosition, Func<GridF<TGridObject>, int, int, TGridObject> createGridObject)
     {
         this.width = width;
         this.height = height;
@@ -30,7 +39,7 @@ public class GridF<TGridObject>
         for(int x = 0; x < gridArray.GetLength(0); x ++) {
             for(int y = 0; y < gridArray.GetLength(1); y ++)
             {
-                gridArray[x, y] = createGridObject();
+                gridArray[x, y] = createGridObject(this, x, y);
             }
             
         }
@@ -63,6 +72,13 @@ public class GridF<TGridObject>
             gridArray[x, y] = value;
             debugGridArray[x, y].text = value.ToString();
         }
+    }
+
+
+
+    public void TriggerGridObjectChanged(int x, int y) 
+    { 
+        if (OnGridObjectChanged != null) OnGridObjectChanged(this, new OnGridObjectChangedEventArgs { x = x, y = y });
     }
 
 

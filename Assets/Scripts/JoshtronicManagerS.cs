@@ -1,5 +1,8 @@
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using Unity.Collections;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -13,20 +16,43 @@ public class JoshtronicManagerS : MonoBehaviour
 
     int currentCamera = 0;
 
+    CameraGrid JoshGrid;
+
+    int startX = 3;
+    int startY = 4;
+
+    int endingX = 1;
+    int endingY = 1;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
-        transform.position = positions[currentCamera].transform.position;
+        
 
         playerScript = GameObject.FindGameObjectWithTag("player").GetComponent<PlayerManagerS>();
+
+        JoshGrid = new CameraGrid(startX, startY, endingX, endingY);
+        JoshGrid.ChangePosition(startX, startY);
+
+
+        print("Destination: " + endingX + " " + endingY);
+
+        Vector2 cameraInfo = new Vector2(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY());
+        currentCamera = JoshGrid.GetCamera(cameraInfo);
+        transform.position = positions[currentCamera].transform.position;
+        print("Distance from spawn: " + JoshGrid.PathfinderDistance(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY()));
+        
+
     }
 
     // Update is called once per frame
     private void Update()
     {
+
         if (walkDelay == 0)
         {
             walkCheck();
+            walkDelay = 500;
         }
         else
         {
@@ -37,40 +63,20 @@ public class JoshtronicManagerS : MonoBehaviour
 
     private void walkCheck()
     {
-        if (currentCamera == 4)
-        {
-                if(playerScript.isFlashlightOn == true && playerScript.holdingObject == true && playerScript.inPosition == true)
-                {
-                    if(playerScript.heldObject.name == "Mask0" && playerScript.hitObjectPosition.name == "Position1")
-                    {
-                        currentCamera = 0;
-                        transform.position = positions[currentCamera].transform.position;
-                    }
-                    else
-                    {
-                        Jumpscare();
-                    }
-                }
-                else
-                {
-                    Jumpscare();
-                }
-        }
-        else
-        {
-            if (currentCamera < positions.Length - 1)
-            {
-                currentCamera += 1;
-                transform.position = positions[currentCamera].transform.position;
-            }
-        }
-        walkDelay = 250;
+        JoshGrid.AnimatronicMovement();
+
+        Vector2 cameraInfo = new Vector2(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY());
+        currentCamera = JoshGrid.GetCamera(cameraInfo);
+        transform.position = positions[currentCamera].transform.position;
+        print("Distance from spawn: " + JoshGrid.PathfinderDistance(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY()));
     }
 
-    private void Jumpscare()
-    {
-        print("YO'URE DEEEEEEEAD");
-    }
+
+    
+
+
+
+
 
 
 

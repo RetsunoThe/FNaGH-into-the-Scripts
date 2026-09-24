@@ -3,31 +3,23 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using CodeMonkey.Utils;
 using UnityEngine.Diagnostics;
+using System.Runtime.CompilerServices;
 
 public class testingGridS : MonoBehaviour
 {
 
-    [SerializeField] private HeatMapS HeatMapS;
-    public GridF pathFinding;
+    private GridF<bool> grid;
+
+    
+   
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        grid = new GridF<bool>(20, 10, 8f, Vector3.zero);
+        
 
 
-        pathFinding = new GridF(5, 5, 2f, new Vector3(0, 0));
-
-        HeatMapS.SetGrid(pathFinding);
-
-
-
-        pathFinding.SetValue(2, 2, 10);
-
-        if(Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            pathFinding.SetValue(UtilsClass.GetMouseWorldPositionWithZ(), 20);
-        }
-         
 
 
     }

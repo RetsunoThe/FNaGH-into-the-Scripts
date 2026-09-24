@@ -2,15 +2,18 @@ using UnityEngine;
 using CodeMonkey.Utils;
 using Unity.Collections;
 
-public class GridF
+public class GridF<TGridObject>
 {
     private int width;
     private int height;
     private float cellSize;
     private Vector3 originPosition;
 
-    private int[,] gridArray;
+    private TGridObject[,] gridArray;
     private TextMesh[,] debugGridArray;
+
+    public const int MAX_VALUE = 5;
+    public const int MIN_VALUE = 0;
 
     public GridF(int width, int height, float cellSize, Vector3 originPosition)
     {
@@ -20,7 +23,7 @@ public class GridF
         this.originPosition = originPosition;
 
 
-        gridArray = new int[width, height];
+        gridArray = new TGridObject[width, height];
         debugGridArray = new TextMesh[width, height];
 
 
@@ -33,11 +36,11 @@ public class GridF
         }
     }
 
-    private Vector3 GetWorldPosition(int x, int y)
-    {
+    public Vector3 GetWorldPosition(int x, int y)
+    { 
         return new Vector3(x, y) * cellSize + originPosition;
     }
-    private void GetXYZ(Vector3 WorldPosition, out int x, out int y)
+    private void GetXY(Vector3 WorldPosition, out int x, out int y)
     {
         x = Mathf.FloorToInt((originPosition - WorldPosition).x / cellSize);
         y = Mathf.FloorToInt((originPosition - WorldPosition).y / cellSize);
@@ -45,28 +48,63 @@ public class GridF
 
 
 
-    public void SetValue(int x, int y, int value)
+    public void SetValue(int x, int y, TGridObject value)
     {
         if (x < gridArray.GetLength(0) && y < gridArray.GetLength(1) && x >= 0 && y >= 0)
-        gridArray[x, y] = value;
-        debugGridArray[x, y].text = value.ToString();
+        {
+            gridArray[x, y] = value;
+            debugGridArray[x, y].text = value.ToString();
+        }
     }
 
 
 
-    public void SetValue(Vector3 WorldPosition, int value)
+    public void SetValue(Vector3 WorldPosition, TGridObject value)
     {
-        int x, y, z;
-        GetXYZ(WorldPosition, out x, out y);
+        int x, y;
+        GetXY(WorldPosition, out x, out y);
         SetValue(x, y, value);
 
         if (x < gridArray.GetLength(0) && y < gridArray.GetLength(1) && x >= 0 && y >= 0)
-        gridArray[x, y] = value;
-        debugGridArray[x, y].text = value.ToString();
+        {
+            gridArray[x, y] = value;
+            debugGridArray[x, y].text = value.ToString();
+        }
 
         
     }
 
+
+
+    public int GetWidth()
+    {
+        return width;   
+    }
+    public int GetHeight()
+    {
+        return height;   
+    }
+    public float GetCellSize()
+    {
+        return cellSize;
+    }
+    public TGridObject GetValue(int x, int y)
+    {
+        if (x < gridArray.GetLength(0) && y < gridArray.GetLength(1) && x >= 0 && y >= 0)
+        {
+        return gridArray[x, y];
+        } else
+        {
+            return default(TGridObject);
+        }
+        
+    }
+    public TGridObject GetValue(Vector3 worldPosition)
+    {
+        int x, y;
+        GetXY(worldPosition, out x, out y);
+        return GetValue(x, y);
+    }
 
 
 

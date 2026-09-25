@@ -64,6 +64,14 @@ public class CameraGrid
     {
         return currentY;
     }
+    public void SetCurrentX(int value)
+    {
+        currentX = value;
+    }
+    public void SetCurrentY(int value)
+    {
+        currentY = value;
+    }
 
 
 
@@ -73,52 +81,6 @@ public class CameraGrid
     {
         int min = 0;
 
-        List<int> randomList = new List<int>();
-
-        if (UnityEngine.Random.Range(1, 4) == 3)
-        {
-            if (cameraLayout[currentX, currentY - 1] == 1)
-            {
-                randomList.Add(1);
-            }
-            if (cameraLayout[currentX, currentY + 1] == 1)
-            {
-                randomList.Add(2);
-            }
-            if (cameraLayout[currentX - 1, currentY] == 1)
-            {
-                randomList.Add(3);
-            }
-            if (cameraLayout[currentX + 1, currentY] == 1)
-            {
-                randomList.Add(4);
-            }
-
-            int randomIndex = UnityEngine.Random.Range(1, randomList.Count);
-
-            switch (randomList[randomIndex])
-            {
-                case 1:
-                    ChangePosition(currentX, currentY - 1);
-                    ResetDirections();
-                    break;
-                case 2:
-                    ChangePosition(currentX, currentY + 1);
-                    ResetDirections();
-                    break;
-                case 3:
-                    ChangePosition(currentX - 1, currentY);
-                    ResetDirections();
-                    break;
-                case 4:
-                    ChangePosition(currentX + 1, currentY);
-                    ResetDirections();
-                    break;
-            }
-            return;
-
-        }
-        
         if (currentY != 0 && cameraLayout[currentX, currentY - 1] == 1)
         {
             leftCameraD = PathfinderDistance(currentX, currentY - 1);

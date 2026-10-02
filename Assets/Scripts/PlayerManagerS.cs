@@ -14,7 +14,8 @@ public class PlayerManagerS : MonoBehaviour
     Vector3 heldObjectReturn;
     
     //Cameras
-    bool inCamera = false;
+    [SerializeField] private GameObject Canvas;
+    public bool inCamera = false;
     int cameraNumber;
     int lastCameraNumber = 0;
     public GameObject[] cameras;
@@ -24,11 +25,25 @@ public class PlayerManagerS : MonoBehaviour
     Vector3 moveTowards;
     bool inMovement = false;
 
+    
+    [SerializeField] float walkSpeed = 5f;
+    [SerializeField] float runSpeed = 5f;
+    [SerializeField] private InputActionReference moveAction;
+
+    private CharacterController _characterController;
+    private Vector2 _moveInput;
+
     //PlayerWalk
     bool canWalk = true;
     [SerializeField] private Transform PlayerCamera;
-    float walkSpeed = 3f;
     Vector3 test = new Vector3(0, 0, 0);
+    bool isGrounded;
+    private float verticalVelocity;
+
+    private float gravity = -12f;
+    private float initialFallValue = -2f;
+
+    
 
     //Raycast
     GameObject hitObject;
@@ -38,6 +53,7 @@ public class PlayerManagerS : MonoBehaviour
     //Position checks
     public bool inPosition = false;
     inPositionS _inPositionReturnS;
+    inPositionS hitObjectS;
     Transform _inPositionReturn;
 
     //Flashlight
@@ -48,18 +64,17 @@ public class PlayerManagerS : MonoBehaviour
     private void Awake()
     {
         RaycastMask = LayerMask.GetMask("raycastObject");
-        cameras = GameObject.FindGameObjectsWithTag("playerCameras");
+        _characterController = GetComponent<CharacterController>();
 
     }
     private void Start()
     {
+        Canvas.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
     }
-
-
 
     private void Update()
     {
-
         //Flashlight
         if (Keyboard.current.fKey.isPressed)
         {
@@ -71,20 +86,24 @@ public class PlayerManagerS : MonoBehaviour
         }
 
         //Walking
+
+        isGrounded = _characterController.isGrounded;
         if (canWalk == true)
         {
-            PlayerWalk();
+            //PlayerWalk();
+            HandleGravity();
+            HandleMovement();
         }
 
         //Return from position
         if (inPosition == true && inCamera == false && Mouse.current.rightButton.wasPressedThisFrame)
         {
-            _inPositionReturnS = hitObjectPosition.GetComponent<inPositionS>();
-            _inPositionReturn = _inPositionReturnS.inPositionReturn;
+            _inPositionReturn = hitObjectS.inPositionReturn.transform;
 
             transform.position = _inPositionReturn.transform.position;
 
             hitObjectPosition = null;
+            hitObjectS = null;
 
             inPosition = false;
             canWalk = true;
@@ -97,29 +116,20 @@ public class PlayerManagerS : MonoBehaviour
             moveTowards = Vector3.MoveTowards(transform.position, hitObjectPosition.transform.position, 1);
         }
 
-        //Moving through cameras
-        if (inCamera == true)
-        {
-            if (Keyboard.current.aKey.wasPressedThisFrame && cameraNumber > 0)
-            {
-                cameraNumber -= 1;
-                transform.position = cameras[cameraNumber].transform.position;
-            }
-            if (Keyboard.current.dKey.wasPressedThisFrame && cameraNumber < 3)
-            {
-                cameraNumber += 1;
-                transform.position = cameras[cameraNumber].transform.position;
-            }
-        }
-
         //Exit cameras
 
         if (inCamera == true && Mouse.current.rightButton.wasPressedThisFrame)
         {
             lastCameraNumber = cameraNumber;
             transform.position = computerChair.position;
+            
+            Canvas.SetActive(false);
+            Cursor.lockState = CursorLockMode.Locked;
+
             inCamera = false;
         }
+
+        RayCast();
 
         //Holding Objects
         if (holdingObject == true)
@@ -132,6 +142,7 @@ public class PlayerManagerS : MonoBehaviour
                 heldObject.transform.position = heldObjectReturn;
                 heldObject.transform.rotation = quaternion.Euler(0, 0, 0);
                 
+                heldObject.GetComponent<BoxCollider>().enabled = true;
                 heldObject = null;
                 heldObjectReturn = new Vector3();
                 
@@ -139,16 +150,44 @@ public class PlayerManagerS : MonoBehaviour
             }
         }
 
-
-
-
-        RayCast();
     }
 
+    private void OnEnable()
+    {
+        moveAction.action.performed += StoreMovementInput;
+        moveAction.action.canceled += StoreMovementInput;
+    }
+    private void OnDisable()
+    {
+        moveAction.action.performed -= StoreMovementInput;
+        moveAction.action.canceled -= StoreMovementInput;
+    }
 
+    private void StoreMovementInput(InputAction.CallbackContext context)
+    {
+        _moveInput = context.ReadValue<Vector2>();
+    }
 
+    private void HandleMovement()
+    {
+        var move = PlayerCamera.TransformDirection(new Vector3(_moveInput.x, 0, _moveInput.y)).normalized;
+        var currentSpeed = walkSpeed;
+        var finalMove = move * currentSpeed;
+        finalMove.y = verticalVelocity;
 
+        _characterController.Move(finalMove * Time.deltaTime);
 
+    }
+
+    private void HandleGravity()
+    {
+        if (isGrounded && verticalVelocity < 0)
+        {
+            verticalVelocity = initialFallValue;
+        }
+
+        verticalVelocity += gravity * Time.deltaTime;
+    }
 
 
 
@@ -158,20 +197,20 @@ public class PlayerManagerS : MonoBehaviour
         
         RaycastHit hit;
 
-        if(Physics.Raycast(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, RaycastMask))
+        if(Physics.Raycast(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward), out hit, 7, RaycastMask))
         {
             hitObject = hit.collider.gameObject;
 
             Debug.DrawRay(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
 
-            //print("did hit");
-
             if (Mouse.current.leftButton.wasPressedThisFrame && inPosition == false && hitObject.tag == "goPosition")
             {
                 if (hitObject.tag == "goPosition")
                 {
-                    hitObjectPosition = hitObject;
+                    hitObjectS = hitObject.GetComponent<inPositionS>();
+                    hitObjectPosition = hitObjectS.inPositionGo;
                 }
+                print("It's selecting");
                 
                 //transform.position = hitObject.transform.position;
                 inPosition = true;
@@ -184,8 +223,11 @@ public class PlayerManagerS : MonoBehaviour
             {
                 inCamera = true;
                 cameraNumber = lastCameraNumber;
+                Canvas.SetActive(true);
+                Cursor.lockState = CursorLockMode.None;
                 computerChair = transform;
                 transform.position = cameras[cameraNumber].transform.position;
+                PlayerCamera.rotation = cameras[cameraNumber].transform.rotation;
             }
 
             if (Keyboard.current.eKey.wasPressedThisFrame && inPosition == false && holdingObject == false && hitObject.tag == "grabObject")
@@ -193,6 +235,7 @@ public class PlayerManagerS : MonoBehaviour
                 if (hitObject.tag == "grabObject")
                 {
                     heldObject = hitObject;
+                    heldObject.GetComponent<BoxCollider>().enabled = false;
                 }
                 heldObjectReturn = heldObject.transform.position;
                 holdingObject = true;
@@ -236,4 +279,16 @@ public class PlayerManagerS : MonoBehaviour
         test = new Vector3(0, 0, 0);
     }
     
+
+
+
+
+
+    public void cameraClickEvent(int camera)
+    {
+        cameraNumber = camera;
+        print(cameras[cameraNumber]);
+        transform.position = cameras[cameraNumber].transform.position;
+        PlayerCamera.rotation = cameras[cameraNumber].transform.rotation;
+    }
 }

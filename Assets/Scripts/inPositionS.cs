@@ -3,7 +3,8 @@ using UnityEngine;
 public class inPositionS : MonoBehaviour
 {
 
-    public Transform inPositionReturn;
+    public GameObject inPositionGo;
+    public GameObject inPositionReturn;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

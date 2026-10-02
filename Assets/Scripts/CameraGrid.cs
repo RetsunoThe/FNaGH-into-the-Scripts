@@ -47,10 +47,10 @@ public class CameraGrid
         currentY = initialY;
 
         CameraDictionary();
-        
-
 
     }
+
+    
 
     public static int[,] GetCameraLayout()
     {

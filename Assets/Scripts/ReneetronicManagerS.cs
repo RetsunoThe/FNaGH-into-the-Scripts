@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class JoshtronicManagerS : MonoBehaviour
+public class ReneetronicManagerS : MonoBehaviour
 {
 
     PlayerManagerS playerScript;
@@ -12,7 +12,7 @@ public class JoshtronicManagerS : MonoBehaviour
 
     [SerializeField] private int currentCamera = 0;
 
-    CameraGrid JoshGrid;
+    CameraGrid ReneeGrid;
 
     [SerializeField] private int startX = 0;
     [SerializeField] private int startY = 3;
@@ -32,16 +32,16 @@ public class JoshtronicManagerS : MonoBehaviour
 
 
 
-        JoshGrid = new CameraGrid(startX, startY, endingX, endingY);
-        JoshGrid.ChangePosition(startX, startY);
+        ReneeGrid = new CameraGrid(startX, startY, endingX, endingY);
+        ReneeGrid.ChangePosition(startX, startY);
 
 
         print("Destination: " + endingX + " " + endingY);
 
-        Vector2 cameraInfo = new Vector2(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY());
-        currentCamera = JoshGrid.GetCamera(cameraInfo);
+        Vector2 cameraInfo = new Vector2(ReneeGrid.GetCurrentX(), ReneeGrid.GetCurrentY());
+        currentCamera = ReneeGrid.GetCamera(cameraInfo);
         transform.position = positions[currentCamera].transform.position;
-        print("Distance from spawn: " + JoshGrid.PathfinderDistance(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY()));
+        print("Distance from spawn: " + ReneeGrid.PathfinderDistance(ReneeGrid.GetCurrentX(), ReneeGrid.GetCurrentY()));
         
 
     }
@@ -73,7 +73,7 @@ public class JoshtronicManagerS : MonoBehaviour
             if (currentCamera != 0 || currentCamera !=5) {
                 if (atDoor == 0)
                 {
-                    JoshGrid.AnimatronicMovement();
+                    ReneeGrid.AnimatronicMovement();
                     walkCheck();
                     walkDelay = 500;
                 }
@@ -93,10 +93,10 @@ public class JoshtronicManagerS : MonoBehaviour
             case 1:
                 if (atDoor == 1 && playerScript.isFlashlightOn == true && playerScript.heldObject != null && playerScript.hitObjectPosition != null)
                     {
-                        if (playerScript.heldObject.name == "Mask0" && playerScript.hitObjectPosition.name == "Position1")
+                        if (playerScript.heldObject.name == "Mask1" && playerScript.hitObjectPosition.name == "Position1")
                         {
-                            JoshGrid.SetCurrentX(startX);
-                            JoshGrid.SetCurrentY(startY);
+                            ReneeGrid.SetCurrentX(startX);
+                            ReneeGrid.SetCurrentY(startY);
                             atDoor = 0;
                             walkCheck();
 
@@ -116,10 +116,10 @@ public class JoshtronicManagerS : MonoBehaviour
             case 2:
                 if (atDoor == 2 && playerScript.isFlashlightOn == true && playerScript.heldObject != null && playerScript.hitObjectPosition != null)
                     {
-                        if (playerScript.heldObject.name == "Mask0" && playerScript.hitObjectPosition.name == "Position2")
+                        if (playerScript.heldObject.name == "Mask1" && playerScript.hitObjectPosition.name == "Position2")
                             {
-                                JoshGrid.SetCurrentX(startX);
-                                JoshGrid.SetCurrentY(startY);
+                                ReneeGrid.SetCurrentX(startX);
+                                ReneeGrid.SetCurrentY(startY);
                                 atDoor = 0;
                                 walkCheck();
 
@@ -143,8 +143,8 @@ public class JoshtronicManagerS : MonoBehaviour
     private void walkCheck()
     {
 
-        Vector2 cameraInfo = new Vector2(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY());
-        currentCamera = JoshGrid.GetCamera(cameraInfo);
+        Vector2 cameraInfo = new Vector2(ReneeGrid.GetCurrentX(), ReneeGrid.GetCurrentY());
+        currentCamera = ReneeGrid.GetCamera(cameraInfo);
         transform.position = positions[currentCamera].transform.position;
         //print("Distance from spawn: " + JoshGrid.PathfinderDistance(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY()));
     }

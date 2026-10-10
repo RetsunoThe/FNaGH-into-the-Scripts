@@ -16,7 +16,7 @@ public class PlayerManagerS : MonoBehaviour
     //Cameras
     [SerializeField] private GameObject Canvas;
     public bool inCamera = false;
-    int cameraNumber;
+    public int cameraNumber;
     int lastCameraNumber = 0;
     public GameObject[] cameras;
     Transform computerChair;

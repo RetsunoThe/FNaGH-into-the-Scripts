@@ -50,6 +50,11 @@ public class CameraGrid
 
     }
 
+    public void SetDestionation(int x, int y)
+    {
+        this.finalX = x;
+        this.finalY = y;
+    }
     
 
     public static int[,] GetCameraLayout()
@@ -73,9 +78,79 @@ public class CameraGrid
         currentY = value;
     }
 
+public void AnimatronicMovementSPecial()
+    {
+        int min = 0;
 
+        if (currentY != 0 && cameraLayout[currentX, currentY - 1] == 1)
+        {
+            leftCameraD = PathfinderDistance(currentX, currentY - 1);
+        }
+        if (currentY != 4 && cameraLayout[currentX, currentY + 1] == 1)
+        {
+            rightCameraD = PathfinderDistance(currentX, currentY + 1);
+        }
+        if (currentX != 0 && cameraLayout[currentX - 1, currentY] == 1)
+        {
+            upperCameraD = PathfinderDistance(currentX - 1, currentY);
+        }
+        if (currentX != 4 && cameraLayout[currentX + 1, currentY] == 1)
+        {
+            lowerCameraD = PathfinderDistance(currentX + 1, currentY);
+        }
 
+        if (finalX == 1 && finalY == 1 || finalX == 1 && finalY == 2 || finalX == 0 && finalY == 2 || finalX == 0 && finalY == 3) {
+            if(currentX == 3 && currentY == 3)
+            {
+                ChangePosition(currentX, currentY - 1);
+                ResetDirections();
+                return;
+            }
+            if(currentX == 3 && currentY == 2)
+            {
+                ChangePosition(currentX, currentY - 1);
+                ResetDirections();
+                return;
+            }
+        }
+        if (finalX == 1 && finalY == 2 || finalX == 0 && finalY == 2 || finalX == 0 && finalY == 3) {
+            if(currentX == 3 && currentY == 1)
+            {
+                ChangePosition(currentX - 1, currentY);
+                ResetDirections();
+                return;
+            } 
+        }
 
+        min = math.min(math.min(leftCameraD, rightCameraD), math.min(upperCameraD, lowerCameraD));
+        if (currentX != 4 && lowerCameraD == min)
+        {
+            ChangePosition(currentX + 1, currentY);
+            ResetDirections();
+            return;
+        }
+        if (currentY != 0 && leftCameraD == min)
+        {
+            ChangePosition(currentX, currentY - 1);
+            ResetDirections();
+            return;
+        }
+        if (currentY != 4 && rightCameraD == min)
+        {
+            ChangePosition(currentX, currentY + 1);
+            ResetDirections();
+            return;
+        }
+        if (currentX != 0 && upperCameraD == min)
+        {
+            ChangePosition(currentX - 1, currentY);
+            ResetDirections();
+            return;
+        }
+
+        
+
+    }
 
     public void AnimatronicMovement()
     {

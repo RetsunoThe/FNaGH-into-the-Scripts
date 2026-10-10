@@ -60,7 +60,7 @@ public class SoltronicManagerS : MonoBehaviour
             }
             if (atLark == 1)
             {
-                foundLarkEvent();
+                FoundLarkEvent();
             }
             if (currentCamera != larkScript.currentCamera)
             {
@@ -76,7 +76,7 @@ public class SoltronicManagerS : MonoBehaviour
     }
 
 
-    private void foundLarkEvent()
+    private void FoundLarkEvent()
     {
         if (playerScript.inCamera == true && playerScript.isFlashlightOn == true && playerScript.cameraNumber == currentCamera)
         {
@@ -87,6 +87,50 @@ public class SoltronicManagerS : MonoBehaviour
             jumpscareEvent();
         }
 
+    }
+
+
+    private void PositionRandomizer()
+    {
+        int min = 1;
+
+        int solPosX = 1;
+        int solPosY = 1;
+
+        int larkPosX = 1;
+        int larkPosY = 1;
+
+        switch(min)
+        {
+            case 1:
+            solPosX = 0;
+            solPosY = 3;
+
+            larkPosX = 4;
+            larkPosY = 2;
+            break;
+
+            case 2:
+            solPosX = 4;
+            solPosY = 0;
+
+            larkPosX = 3;
+            larkPosY = 4;
+            break;
+
+            case 3:
+            solPosX = 4;
+            solPosY = 0;
+
+            larkPosX = 0;
+            larkPosY = 3;
+            break;
+        }
+
+        SolGrid.SetCurrentX(solPosX);
+        SolGrid.SetCurrentY(solPosY);
+        larkScript.LarkGrid.SetCurrentX(larkPosX);
+        larkScript.LarkGrid.SetCurrentY(larkPosY);
     }
 
     private void walkCheck()

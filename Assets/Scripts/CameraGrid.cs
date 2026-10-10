@@ -52,8 +52,8 @@ public class CameraGrid
 
     public void SetDestionation(int x, int y)
     {
-        this.finalX = x;
-        this.finalY = y;
+        finalX = x;
+        finalY = y;
     }
     
 

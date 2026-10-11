@@ -1,4 +1,5 @@
 
+using System;
 using NUnit.Framework;
 using Unity.Mathematics;
 using Unity.VisualScripting.ReorderableList.Element_Adder_Menu;
@@ -61,6 +62,11 @@ public class PlayerManagerS : MonoBehaviour
 
 
 
+    //Camera Display
+
+    [SerializeField] private GameObject VisualizerTest;
+
+
     private void Awake()
     {
         RaycastMask = LayerMask.GetMask("raycastObject");
@@ -75,6 +81,20 @@ public class PlayerManagerS : MonoBehaviour
 
     private void Update()
     {
+
+
+        if (cameraNumber == 1 & inCamera == true)
+        {
+            VisualizerTest.SetActive(true);
+        }
+        else
+        {
+            VisualizerTest.SetActive(false);
+        }
+
+
+
+
         //Flashlight
         if (Keyboard.current.fKey.isPressed)
         {

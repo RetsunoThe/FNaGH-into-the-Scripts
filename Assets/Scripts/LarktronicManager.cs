@@ -9,12 +9,12 @@ public class LarktronicManager : MonoBehaviour
 
     int walkDelay = 500;
 
-    public int currentCamera = 3;
+    public int currentCamera = 0;
 
     public CameraGrid LarkGrid;
 
     [SerializeField] private int startX = 3;
-    [SerializeField] private int startY = 4;
+    [SerializeField] private int startY = 3;
 
     [SerializeField] private int endingX = 4;
     [SerializeField] private int endingY = 0;
@@ -34,13 +34,11 @@ public class LarktronicManager : MonoBehaviour
         LarkGrid = new CameraGrid(startX, startY, endingX, endingY);
         LarkGrid.ChangePosition(startX, startY);
 
-
-        print("Destination: " + endingX + " " + endingY);
-
+        print("lark first" + currentCamera);
         Vector2 cameraInfo = new Vector2(LarkGrid.GetCurrentX(), LarkGrid.GetCurrentY());
         currentCamera = LarkGrid.GetCamera(cameraInfo);
-        print("Distance from spawn: " + LarkGrid.PathfinderDistance(LarkGrid.GetCurrentX(), LarkGrid.GetCurrentY()));
         
+        CameraVisualizer();
 
     }
 
@@ -50,31 +48,8 @@ public class LarktronicManager : MonoBehaviour
         if (walkDelay == 0)
         {
             
-            if (atDoor != 0)
-            {
-                atDoorEvent();
-            }
-            if (currentCamera == 0 && atDoor == 0)
-            {
-                atDoor = 1;
-                currentCamera = 14;
-
-                walkDelay = 600;
-            }
-            if (currentCamera == 5 && atDoor == 0)
-            {
-                atDoor = 2;
-                currentCamera = 15;
-                walkDelay = 600;
-            }
-            if (currentCamera != 0 || currentCamera !=5) {
-                if (atDoor == 0)
-                {
-                    LarkGrid.AnimatronicMovement1();
-                    walkCheck();
-                    walkDelay = 500;
-                }
-            }
+           walkCheck();
+           walkDelay = 500;
         }
         else
         {
@@ -82,60 +57,6 @@ public class LarktronicManager : MonoBehaviour
         }
     }
 
-    private void atDoorEvent()
-    {
-
-        switch (atDoor)
-        {
-            case 1:
-                if (atDoor == 1 && playerScript.isFlashlightOn == true && playerScript.heldObject != null && playerScript.hitObjectPosition != null)
-                    {
-                        if (playerScript.heldObject.name == "Mask0" && playerScript.hitObjectPosition.name == "Position1")
-                        {
-                            LarkGrid.SetCurrentX(startX);
-                            LarkGrid.SetCurrentY(startY);
-                            atDoor = 0;
-                            walkCheck();
-
-                        }
-                        else
-                        {
-                        jumpscareEvent();
-                        }
-  
-                    }
-                else
-                {
-                    jumpscareEvent();
-                }
-                        
-                break;
-            case 2:
-                if (atDoor == 2 && playerScript.isFlashlightOn == true && playerScript.heldObject != null && playerScript.hitObjectPosition != null)
-                    {
-                        if (playerScript.heldObject.name == "Mask0" && playerScript.hitObjectPosition.name == "Position2")
-                            {
-                                LarkGrid.SetCurrentX(startX);
-                                LarkGrid.SetCurrentY(startY);
-                                atDoor = 0;
-                                walkCheck();
-
-                            }
-                            else
-                            {
-                            jumpscareEvent();
-                            }
-
-                        }
-                    else
-                    {
-                        jumpscareEvent();
-                    }
-                break;
-        }
-        
-        
-    }
 
 private void walkCheck()
     {
@@ -155,7 +76,7 @@ private void walkCheck()
         if (currentCamera >= 0 && currentCamera <= 13)
         {
             GameObject[] CameraVisualizer = playerScript.CameraVisualizers[currentCamera].GetComponent<CameraViewManager>().CameraAnimatronics;
-            CameraVisualizer[3].SetActive(true);
+            CameraVisualizer[1].SetActive(true);
         }
         
     }
@@ -172,7 +93,7 @@ private void walkCheck()
 
     private void jumpscareEvent()
     {
-        print("YOU ARE DEEEEEEAD");
+        print("YOU ARE DEEEEEEAD (lark)");
     }
 
 

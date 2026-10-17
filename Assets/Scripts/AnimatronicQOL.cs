@@ -11,6 +11,7 @@ using UnityEngine.InputSystem.Interactions;
 public static class AnimatronicQOL
 {
 
+    static public System.Random random = new System.Random();
 
     //atDoorEvent1 function checks three conditions:
 

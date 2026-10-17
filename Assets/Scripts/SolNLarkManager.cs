@@ -1,44 +1,15 @@
 using UnityEngine;
 
-public class SoltronicManagerS : MonoBehaviour
+public class SolNLarkManager : MonoBehaviour
 {
 
-    PlayerManagerS playerScript;
-    LarktronicManager larkScript;
+    AnimatronicType2 Soltronic;
 
-    //Walking Through Cameras
-
-    int walkDelay = 500;
-
-    public int currentCamera = 0;
-
-    CameraGrid SolGrid;
-
-    [SerializeField] private int startX = 0;
-    [SerializeField] private int startY = 3;
-
-    [SerializeField] private int endingX = 4;
-    [SerializeField] private int endingY = 0;
-
-    int atLark = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
-        print("stop fucking bugging");
-        playerScript = GameObject.FindGameObjectWithTag("player").GetComponent<PlayerManagerS>();
-        larkScript = GameObject.FindGameObjectWithTag("lark").GetComponent<LarktronicManager>();
-
-
-        SolGrid = new CameraGrid(startX, startY, endingX, endingY);
-        SolGrid.ChangePosition(startX, startY);
-
-
-        Vector2 cameraInfo = new Vector2(SolGrid.GetCurrentX(), SolGrid.GetCurrentY());
-        currentCamera = SolGrid.GetCamera(cameraInfo);
-        print("Distance from spawn: " + SolGrid.PathfinderDistance(SolGrid.GetCurrentX(), SolGrid.GetCurrentY()));
-
-        CameraVisualizer();
+        Soltronic = new AnimatronicType2(0, 3, 4, 0, 10, 3, 0);
         
 
     }
@@ -46,29 +17,9 @@ public class SoltronicManagerS : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (walkDelay == 0)
-        {
 
-            if (currentCamera == larkScript.currentCamera && atLark == 0)
-            {
-                atLark = 1;
-                walkDelay = 500;
-            }
-            if (atLark == 1)
-            {
-                FoundLarkEvent();
-            }
-            if (currentCamera != larkScript.currentCamera)
-            {
-                SolGrid.AnimatronicMovement1();
-                walkCheck();
-                walkDelay = 500;
-            }
-        }
-        else
-        {
-            walkDelay -= 1;
-        }
+
+
     }
 
 
@@ -76,7 +27,7 @@ public class SoltronicManagerS : MonoBehaviour
     {
         if (playerScript.inCamera == true && playerScript.isFlashlightOn == true && playerScript.cameraNumber == currentCamera)
         {
-            
+            PositionRandomizer();
         }
         else
         {
@@ -86,9 +37,60 @@ public class SoltronicManagerS : MonoBehaviour
     }
 
 
+    private void walkPattern0()
+    {
+        if (walkDelay == 0)
+        {
+            
+
+
+
+            if (atLark == 1)
+            {
+                FoundLarkEvent();
+            }
+            
+            if (currentCamera == larkScript.currentCamera && atLark == 0)
+            {
+                atLark = 1;
+                walkDelay = 500;
+            }
+            if (currentCamera != larkScript.currentCamera)
+            {
+                SolGrid.SetDestionation(larkScript.LarkGrid.GetCurrentX(), larkScript.LarkGrid.GetCurrentY());
+                SolGrid.AnimatronicMovement1();
+                walkCheck();
+                walkDelay = 500;
+                int randomizer = AnimatronicQOL.random.Next(3);
+                    if (randomizer == 1)
+                    {
+                        walkPattern = 1;
+                    }
+            }
+        }
+        else
+        {
+            walkDelay -= 1;
+        }
+    }
+    private void walkPattern1()
+    {
+        if (walkDelay == 0)
+        {
+            SolGrid.AnimatronicMovement2();
+            walkDelay = 500;
+            int randomizer = AnimatronicQOL.random.Next(3);
+            if (randomizer == 1)
+            {
+                walkPattern = 0;
+            }
+        }
+    }
+
+
     private void PositionRandomizer()
     {
-        int min = 1;
+        int min = AnimatronicQOL.random.Next(7);
 
         int solPosX = 1;
         int solPosY = 1;
@@ -120,6 +122,38 @@ public class SoltronicManagerS : MonoBehaviour
 
             larkPosX = 0;
             larkPosY = 3;
+            break;
+
+            case 4:
+            solPosX = 3;
+            solPosY = 4;
+            
+            larkPosX = 4;
+            larkPosY = 0;
+            break;
+
+            case 5:
+            solPosX = 2;
+            solPosY = 3;
+            
+            larkPosX = 0;
+            larkPosY = 3;
+            break;
+
+            case 6:
+            solPosX = 3;
+            solPosY = 4;
+            
+            larkPosX = 2;
+            larkPosY = 0;
+            break;
+
+            case 7:
+            solPosX = 2;
+            solPosY = 0;
+            
+            larkPosX = 3;
+            larkPosY = 4;
             break;
         }
 
@@ -173,13 +207,10 @@ private void walkCheck()
 
     private void jumpscareEvent()
     {
-        print("YOU ARE DEEEEEEAD");
+        print("YOU ARE DEEEEEEAD (sol)");
     }
 
 
 
-
-
-
-
 }
+

@@ -1,6 +1,7 @@
 
 using System;
 using NUnit.Framework;
+using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting.ReorderableList.Element_Adder_Menu;
 using UnityEngine;
@@ -19,7 +20,6 @@ public class PlayerManagerS : MonoBehaviour
     public bool inCamera = false;
     public int cameraNumber;
     int lastCameraNumber = 0;
-    public GameObject[] cameras;
     Transform computerChair;
 
     //Smoothmoving
@@ -61,10 +61,12 @@ public class PlayerManagerS : MonoBehaviour
     public bool isFlashlightOn = false;
 
 
+    [SerializeField] private TextMeshProUGUI messageDisplay;
+
 
     //Camera Display
 
-    [SerializeField] private GameObject VisualizerTest;
+    [SerializeField] public GameObject[] CameraVisualizers;
 
 
     private void Awake()
@@ -77,21 +79,21 @@ public class PlayerManagerS : MonoBehaviour
     {
         Canvas.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
+
     }
 
     private void Update()
     {
 
-
-        if (cameraNumber == 1 & inCamera == true)
+        if (inCamera == true)
         {
-            VisualizerTest.SetActive(true);
+            CameraVisualizer();
         }
         else
         {
-            VisualizerTest.SetActive(false);
+            CameraVisualizers[lastCameraNumber].SetActive(false);
         }
-
+        
 
 
 
@@ -149,8 +151,6 @@ public class PlayerManagerS : MonoBehaviour
             inCamera = false;
         }
 
-        RayCast();
-
         //Holding Objects
         if (holdingObject == true)
         {
@@ -169,6 +169,8 @@ public class PlayerManagerS : MonoBehaviour
                 holdingObject = false;
             }
         }
+
+        RayCast();
 
     }
 
@@ -230,7 +232,6 @@ public class PlayerManagerS : MonoBehaviour
                     hitObjectS = hitObject.GetComponent<inPositionS>();
                     hitObjectPosition = hitObjectS.inPositionGo;
                 }
-                print("It's selecting");
                 
                 //transform.position = hitObject.transform.position;
                 inPosition = true;
@@ -239,15 +240,13 @@ public class PlayerManagerS : MonoBehaviour
                 moveTowards = Vector3.MoveTowards(transform.position, hitObject.transform.position, 1);
             }
 
-            if (Mouse.current.leftButton.wasPressedThisFrame && inPosition == true && hitObject.tag == "puter")
+            if (Mouse.current.leftButton.wasPressedThisFrame && inPosition == true && inCamera == false && hitObject.tag == "puter")
             {
                 inCamera = true;
                 cameraNumber = lastCameraNumber;
                 Canvas.SetActive(true);
                 Cursor.lockState = CursorLockMode.None;
                 computerChair = transform;
-                transform.position = cameras[cameraNumber].transform.position;
-                PlayerCamera.rotation = cameras[cameraNumber].transform.rotation;
             }
 
             if (Keyboard.current.eKey.wasPressedThisFrame && inPosition == false && holdingObject == false && hitObject.tag == "grabObject")
@@ -259,6 +258,14 @@ public class PlayerManagerS : MonoBehaviour
                 }
                 heldObjectReturn = heldObject.transform.position;
                 holdingObject = true;
+                
+            }
+
+            if (Keyboard.current.eKey.wasPressedThisFrame && inPosition == false && holdingObject == false && hitObject.tag == "loreObject")
+            {
+                RayCastMessage message = hitObject.GetComponent<RayCastMessage>();
+                messageDisplay.text = message.raycastMessage; 
+                print("babababa");
                 
             }
 
@@ -300,15 +307,24 @@ public class PlayerManagerS : MonoBehaviour
     }
     
 
+    private void CameraVisualizer()
+    {
+        for (int i = 0; i < CameraVisualizers.Length; i ++)
+        {
+            CameraVisualizers[i].SetActive(false);
+        }
+        CameraVisualizers[cameraNumber].SetActive(true);
+    }
 
 
 
 
     public void cameraClickEvent(int camera)
     {
+        for (int i = 0; i < CameraVisualizers.Length; i ++)
+        {
+            CameraVisualizers[i].SetActive(false);
+        }
         cameraNumber = camera;
-        print(cameras[cameraNumber]);
-        transform.position = cameras[cameraNumber].transform.position;
-        PlayerCamera.rotation = cameras[cameraNumber].transform.rotation;
     }
 }

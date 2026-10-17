@@ -4,18 +4,17 @@ public class LarktronicManager : MonoBehaviour
 {
 
     PlayerManagerS playerScript;
-    [SerializeField] public GameObject[] positions;
 
     //Walking Through Cameras
 
     int walkDelay = 500;
 
-    public int currentCamera = 0;
+    public int currentCamera = 3;
 
     public CameraGrid LarkGrid;
 
-    [SerializeField] private int startX = 0;
-    [SerializeField] private int startY = 3;
+    [SerializeField] private int startX = 3;
+    [SerializeField] private int startY = 4;
 
     [SerializeField] private int endingX = 4;
     [SerializeField] private int endingY = 0;
@@ -40,7 +39,6 @@ public class LarktronicManager : MonoBehaviour
 
         Vector2 cameraInfo = new Vector2(LarkGrid.GetCurrentX(), LarkGrid.GetCurrentY());
         currentCamera = LarkGrid.GetCamera(cameraInfo);
-        transform.position = positions[currentCamera].transform.position;
         print("Distance from spawn: " + LarkGrid.PathfinderDistance(LarkGrid.GetCurrentX(), LarkGrid.GetCurrentY()));
         
 
@@ -60,20 +58,19 @@ public class LarktronicManager : MonoBehaviour
             {
                 atDoor = 1;
                 currentCamera = 14;
-                transform.position = positions[currentCamera].transform.position;
+
                 walkDelay = 600;
             }
             if (currentCamera == 5 && atDoor == 0)
             {
                 atDoor = 2;
                 currentCamera = 15;
-                transform.position = positions[currentCamera].transform.position;
                 walkDelay = 600;
             }
             if (currentCamera != 0 || currentCamera !=5) {
                 if (atDoor == 0)
                 {
-                    LarkGrid.AnimatronicMovement();
+                    LarkGrid.AnimatronicMovement1();
                     walkCheck();
                     walkDelay = 500;
                 }
@@ -140,13 +137,36 @@ public class LarktronicManager : MonoBehaviour
         
     }
 
-    private void walkCheck()
+private void walkCheck()
     {
 
+        //Here we first get the current newly changed animatronic position and store it in cameraInfo to then convert the native 
+        //currentCamera variable into its respective number.
         Vector2 cameraInfo = new Vector2(LarkGrid.GetCurrentX(), LarkGrid.GetCurrentY());
         currentCamera = LarkGrid.GetCamera(cameraInfo);
-        transform.position = positions[currentCamera].transform.position;
-        //print("Distance from spawn: " + JoshGrid.PathfinderDistance(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY()));
+
+        //Then we run the renderings for the animatronic to be updated in the cameras.
+        WipeAllCameras();
+        CameraVisualizer();
+    }
+
+    private void CameraVisualizer()
+    {
+        if (currentCamera >= 0 && currentCamera <= 13)
+        {
+            GameObject[] CameraVisualizer = playerScript.CameraVisualizers[currentCamera].GetComponent<CameraViewManager>().CameraAnimatronics;
+            CameraVisualizer[3].SetActive(true);
+        }
+        
+    }
+
+    private void WipeAllCameras()
+    {
+        GameObject[] CameraVisualizer = playerScript.CameraVisualizers;
+        for (int i = 0; i < CameraVisualizer.Length; i ++)
+        {
+           CameraVisualizer[i].GetComponent<CameraViewManager>().CameraAnimatronics[1].SetActive(false);
+        }
     }
 
 

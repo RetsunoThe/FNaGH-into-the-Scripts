@@ -4,7 +4,6 @@ public class SoltronicManagerS : MonoBehaviour
 {
 
     PlayerManagerS playerScript;
-    [SerializeField] public GameObject[] positions;
     LarktronicManager larkScript;
 
     //Walking Through Cameras
@@ -26,23 +25,20 @@ public class SoltronicManagerS : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
+        print("stop fucking bugging");
         playerScript = GameObject.FindGameObjectWithTag("player").GetComponent<PlayerManagerS>();
         larkScript = GameObject.FindGameObjectWithTag("lark").GetComponent<LarktronicManager>();
-
-
-
 
 
         SolGrid = new CameraGrid(startX, startY, endingX, endingY);
         SolGrid.ChangePosition(startX, startY);
 
 
-        print("Destination: " + endingX + " " + endingY);
-
         Vector2 cameraInfo = new Vector2(SolGrid.GetCurrentX(), SolGrid.GetCurrentY());
         currentCamera = SolGrid.GetCamera(cameraInfo);
-        transform.position = positions[currentCamera].transform.position;
         print("Distance from spawn: " + SolGrid.PathfinderDistance(SolGrid.GetCurrentX(), SolGrid.GetCurrentY()));
+
+        CameraVisualizer();
         
 
     }
@@ -64,7 +60,7 @@ public class SoltronicManagerS : MonoBehaviour
             }
             if (currentCamera != larkScript.currentCamera)
             {
-                SolGrid.AnimatronicMovement();
+                SolGrid.AnimatronicMovement1();
                 walkCheck();
                 walkDelay = 500;
             }
@@ -133,14 +129,37 @@ public class SoltronicManagerS : MonoBehaviour
         larkScript.LarkGrid.SetCurrentY(larkPosY);
     }
 
-    private void walkCheck()
+private void walkCheck()
     {
-        SolGrid.SetDestionation(larkScript.LarkGrid.GetCurrentX(), larkScript.LarkGrid.GetCurrentY());
 
+        //Here we first get the current newly changed animatronic position and store it in cameraInfo to then convert the native 
+        //currentCamera variable into its respective number.
         Vector2 cameraInfo = new Vector2(SolGrid.GetCurrentX(), SolGrid.GetCurrentY());
         currentCamera = SolGrid.GetCamera(cameraInfo);
-        transform.position = positions[currentCamera].transform.position;
-        //print("Distance from spawn: " + JoshGrid.PathfinderDistance(JoshGrid.GetCurrentX(), JoshGrid.GetCurrentY()));
+
+        //Then we run the renderings for the animatronic to be updated in the cameras.
+        WipeAllCameras();
+        CameraVisualizer();
+    }
+
+    private void CameraVisualizer()
+    {
+        if (currentCamera >= 0 && currentCamera <= 13)
+        {
+            print("bhtekjlsadtgfdsffedsasghytefdadgjreersfadghytersfddgjtyersfdgjtyeafsdhdgty4");
+            GameObject[] CameraVisualizer = playerScript.CameraVisualizers[currentCamera].GetComponent<CameraViewManager>().CameraAnimatronics;
+            CameraVisualizer[5].SetActive(true);
+        }
+        
+    }
+
+    private void WipeAllCameras()
+    {
+        GameObject[] CameraVisualizer = playerScript.CameraVisualizers;
+        for (int i = 0; i < CameraVisualizer.Length; i ++)
+        {
+           CameraVisualizer[i].GetComponent<CameraViewManager>().CameraAnimatronics[5].SetActive(false);
+        }
     }
 
 

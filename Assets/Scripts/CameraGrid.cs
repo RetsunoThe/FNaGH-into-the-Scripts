@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem.Interactions;
 
@@ -24,6 +26,9 @@ public class CameraGrid
 
     int currentX;
     int currentY;
+
+    public static bool someoneElseAtPosition1 = false;
+    public static bool someoneElseAtPosition2 = false;
 
     private Dictionary<Vector2, int> cameraNumber = new Dictionary<Vector2, int>();
 
@@ -78,7 +83,9 @@ public class CameraGrid
         currentY = value;
     }
 
-public void AnimatronicMovementSPecial()
+
+
+    public void AnimatronicMovement1()
     {
         int min = 0;
 
@@ -99,6 +106,8 @@ public void AnimatronicMovementSPecial()
             lowerCameraD = PathfinderDistance(currentX + 1, currentY);
         }
 
+
+        //Set of ifs for specific pathfinding scenarios
         if (finalX == 1 && finalY == 1 || finalX == 1 && finalY == 2 || finalX == 0 && finalY == 2 || finalX == 0 && finalY == 3) {
             if(currentX == 3 && currentY == 3)
             {
@@ -122,6 +131,7 @@ public void AnimatronicMovementSPecial()
             } 
         }
 
+        //Set positions
         min = math.min(math.min(leftCameraD, rightCameraD), math.min(upperCameraD, lowerCameraD));
         if (currentX != 4 && lowerCameraD == min)
         {
@@ -152,79 +162,57 @@ public void AnimatronicMovementSPecial()
 
     }
 
-    public void AnimatronicMovement()
-    {
-        int min = 0;
 
+    public void AnimatronicMovement2()
+    {
+        List<string> availableCases = new List<string>();
+        
         if (currentY != 0 && cameraLayout[currentX, currentY - 1] == 1)
         {
-            leftCameraD = PathfinderDistance(currentX, currentY - 1);
+            availableCases.Add("left");
         }
         if (currentY != 4 && cameraLayout[currentX, currentY + 1] == 1)
         {
-            rightCameraD = PathfinderDistance(currentX, currentY + 1);
+            availableCases.Add("right");
         }
         if (currentX != 0 && cameraLayout[currentX - 1, currentY] == 1)
         {
-            upperCameraD = PathfinderDistance(currentX - 1, currentY);
+            availableCases.Add("up");
         }
         if (currentX != 4 && cameraLayout[currentX + 1, currentY] == 1)
         {
-            lowerCameraD = PathfinderDistance(currentX + 1, currentY);
+            availableCases.Add("down");
         }
 
-        if (finalX == 1 && finalY == 1 || finalX == 1 && finalY == 2 || finalX == 0 && finalY == 2 || finalX == 0 && finalY == 3) {
-            if(currentX == 3 && currentY == 3)
-            {
-                ChangePosition(currentX, currentY - 1);
-                ResetDirections();
-                return;
-            }
-            if(currentX == 3 && currentY == 2)
-            {
-                ChangePosition(currentX, currentY - 1);
-                ResetDirections();
-                return;
-            }
-        }
-        if (finalX == 1 && finalY == 2 || finalX == 0 && finalY == 2 || finalX == 0 && finalY == 3) {
-            if(currentX == 3 && currentY == 1)
-            {
-                ChangePosition(currentX - 1, currentY);
-                ResetDirections();
-                return;
-            } 
-        }
+        System.Random random = new System.Random();
 
-        min = math.min(math.min(leftCameraD, rightCameraD), math.min(upperCameraD, lowerCameraD));
-        if (currentX != 4 && lowerCameraD == min)
-        {
-            ChangePosition(currentX + 1, currentY);
-            ResetDirections();
-            return;
-        }
-        if (currentY != 0 && leftCameraD == min)
+        int index = random.Next(availableCases.Count - 1);
+
+        if (availableCases[index] == "left")
         {
             ChangePosition(currentX, currentY - 1);
-            ResetDirections();
             return;
         }
-        if (currentY != 4 && rightCameraD == min)
+        if (availableCases[index] == "right")
         {
             ChangePosition(currentX, currentY + 1);
-            ResetDirections();
             return;
         }
-        if (currentX != 0 && upperCameraD == min)
+        if (availableCases[index] == "up")
         {
             ChangePosition(currentX - 1, currentY);
-            ResetDirections();
+            return;
+        }
+        if (availableCases[index] == "down")
+        {
+            ChangePosition(currentX + 1, currentY);
             return;
         }
 
-        
-
     }
+
+
+
 
     private void ResetDirections()
     {

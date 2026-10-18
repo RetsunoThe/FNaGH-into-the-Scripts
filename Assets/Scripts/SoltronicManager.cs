@@ -19,8 +19,8 @@ public class SoltronicManager : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        Larktronic.AnimatronicUpdate();
-        Soltronic.AnimatronicUpdate();
+        //Larktronic.AnimatronicUpdate();
+        //Soltronic.AnimatronicUpdate();
         
 
     }

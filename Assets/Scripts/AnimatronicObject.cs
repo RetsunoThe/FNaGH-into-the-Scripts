@@ -99,17 +99,17 @@ public abstract class AnimatronicObject : MonoBehaviour
     {
         if (baseWalkDelay == 0)
         {
+            Debug.Log("Random " + name);
             AnimatronicGrid.AnimatronicMovement2();
             RefreshCameras();
             baseWalkDelay = 500;
+            walkPattern = 0;
         }
         else
         {
             baseWalkDelay -= 1;
         }
     }
-
-
 
     protected void jumpscareEvent()
     {
@@ -160,6 +160,7 @@ public class AnimatronicType1 : AnimatronicObject
             //animatronic will wait in the special camera until next walkDelay = 0
             if (currentCamera == 0 && atDoor == 0 && CameraGrid.someoneElseAtPosition1 == false)
             {
+                print(name + " at door");
                 CameraGrid.someoneElseAtPosition1 = true;
                 atDoor = 1;
                 currentCamera = 14;
@@ -240,8 +241,6 @@ public class AnimatronicType1 : AnimatronicObject
 
     public void AnimatronicUpdate()
     {
-        int randomizer;
-
         switch (walkPattern)
         {
             case 0:
@@ -249,21 +248,12 @@ public class AnimatronicType1 : AnimatronicObject
                 if(FlagEvent())
                 {
                     WalkPatternAggressive();
-                    randomizer = AnimatronicQOL.random.Next(3);
-                    if (randomizer == 1)
-                    {
-                        walkPattern = 1;
-                    }
                 }
             break;
 
             case 1:
                 WalkPatternRandom();
-                randomizer = AnimatronicQOL.random.Next(3);
-                    if (randomizer == 1)
-                    {
-                        walkPattern = 0;
-                    }
+
             break;
         }
     }
@@ -301,6 +291,12 @@ public class AnimatronicType1 : AnimatronicObject
 }
 
 
+
+
+
+
+
+
 public class AnimatronicType2 : AnimatronicObject
 {
     AnimatronicType2 theOtherScript;
@@ -308,8 +304,6 @@ public class AnimatronicType2 : AnimatronicObject
     bool atOtherScript;
 
     int agent = 0;
-
-    string theOtherScriptName;
 
     public AnimatronicType2(int startX, int startY, int endingX, int endingY, int difficultyLevel, 
     int displayNumber, int walkPattern, string name)
@@ -323,19 +317,9 @@ public class AnimatronicType2 : AnimatronicObject
     {
         return agent;
     }
-
-    private void WalkPatternPassive()
+    public void SetAgent(int value)
     {
-        if (baseWalkDelay == 0)
-        {
-            AnimatronicGrid.AnimatronicMovement1();
-            RefreshCameras();
-            baseWalkDelay = 500;
-        }
-        else
-        {
-            baseWalkDelay -= 1;
-        }
+        agent = value;
     }
 
     public void SetupScripts(AnimatronicType2 receiveScript)
@@ -356,16 +340,43 @@ public class AnimatronicType2 : AnimatronicObject
 
         Debug.Log(GetAgent());
             
-        
+    }
+
+    private void WalkPatternPassive()
+    {
+        if (baseWalkDelay == 0)
+        {
+            Debug.Log("Passive " + name);
+            AnimatronicGrid.AnimatronicMovement1();
+            AnimatronicGrid.SetDestionation(theOtherScript.AnimatronicGrid.GetCurrentX(), theOtherScript.AnimatronicGrid.GetCurrentY());
+            RefreshCameras();
+            baseWalkDelay = 500;
+            if (AnimatronicQOL.random.Next(3) == 1)
+            {
+                walkPattern = 1;
+            }
+        }
+        else
+        {
+            baseWalkDelay -= 1;
+        }
     }
 
     public void AnimatronicUpdate()
     {
-            int randomizer;
-
-
             if (agent == 1)
             {
+                if(atOtherScript == true)
+                {
+                    if (baseWalkDelay > 0)
+                    {
+                        baseWalkDelay -= 1;
+                    }
+                    if (baseWalkDelay == 0)
+                    {
+                        CheckForJumpscare();
+                    }
+                }
                 // Debug.Log("This is agent 1 " + name);
                 if (FlagEvent())
                 {
@@ -373,41 +384,35 @@ public class AnimatronicType2 : AnimatronicObject
                     switch (walkPattern)
                     {
                         case 0:
-                        
                             WalkPatternPassive();
-                            randomizer = AnimatronicQOL.random.Next(3);
-                            if (randomizer == 1)
-                            {
-                                walkPattern = 1;
-                            }
+                            RefreshCameras();
                         break;
 
                         case 1:
                             WalkPatternRandom();
-                            randomizer = AnimatronicQOL.random.Next(3);
-                            if (randomizer == 1)
-                            {
-                                walkPattern = 0;
-                            }
+                            RefreshCameras();
                         break;
+                
                     }
                 }
-            }
-            else
+                else
             {
-                // Debug.Log("This is agent 2 " + name);
-                WalkPatternPassive();
-                walkPattern = 1;
-            }
+                if (currentCamera !=  theOtherScript.currentCamera)
+                {
+                    // Debug.Log("This is agent 2 " + name);
+                    WalkPatternRandom();
+                    walkPattern = 1;
+                }
+            }    
+        }
     }
 
 
 
     private bool FlagEvent()
-    {
+    {   
         if (atOtherScript == true)
         {
-            FoundOther();
             return false;
         }
         if (currentCamera == theOtherScript.currentCamera && atOtherScript == false)
@@ -425,11 +430,13 @@ public class AnimatronicType2 : AnimatronicObject
     }
 
 
-    private void FoundOther()
+    private void CheckForJumpscare()
     {
         if (playerScript.inCamera == true && playerScript.isFlashlightOn == true && playerScript.cameraNumber == currentCamera)
         {
             PositionRandomizer();
+            atOtherScript = false;
+            baseWalkDelay = 500;
         }
         else
         {
@@ -474,14 +481,6 @@ public class AnimatronicType2 : AnimatronicObject
             agent2Y = 3;
             break;
 
-            case 4:
-            agent1X = 3;
-            agent1Y = 4;
-            
-            agent2X = 4;
-            agent2Y = 0;
-            break;
-
             case 5:
             agent1X = 2;
             agent1Y = 3;
@@ -498,7 +497,7 @@ public class AnimatronicType2 : AnimatronicObject
             agent2Y = 0;
             break;
 
-            case 7:
+            case 4:
             agent1X = 2;
             agent1Y = 0;
             
@@ -507,22 +506,21 @@ public class AnimatronicType2 : AnimatronicObject
             break;
         }
 
-        if (GetAgent() == 1)
+        if (agent == 1 && atOtherScript == true)
         {
-            AnimatronicGrid.SetCurrentX(agent1X);
-            AnimatronicGrid.SetCurrentY(agent1Y);
-            theOtherScript.AnimatronicGrid.SetCurrentX(agent2X);
-            theOtherScript.AnimatronicGrid.SetCurrentY(agent2Y);
+            AnimatronicGrid.ChangePosition(agent1X, agent1Y);
+            theOtherScript.AnimatronicGrid.ChangePosition(agent2X, agent2Y);
+            agent = 0;
         }
         else
         {
-            AnimatronicGrid.SetCurrentX(agent2X);
-            AnimatronicGrid.SetCurrentY(agent2Y);
-            theOtherScript.AnimatronicGrid.SetCurrentX(agent1X);
-            theOtherScript.AnimatronicGrid.SetCurrentY(agent1Y);
+            AnimatronicGrid.ChangePosition(agent2X, agent2Y);
+            theOtherScript.AnimatronicGrid.ChangePosition(agent1X, agent1Y);
+            theOtherScript.SetAgent(1);
         }
 
         RefreshCameras();
+        theOtherScript.RefreshCameras();
 
     }
 }

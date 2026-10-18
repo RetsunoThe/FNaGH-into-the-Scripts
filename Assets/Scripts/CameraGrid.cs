@@ -186,7 +186,7 @@ public class CameraGrid
 
         System.Random random = new System.Random();
 
-        int index = random.Next(availableCases.Count - 1);
+        int index = random.Next(availableCases.Count);
 
         if (availableCases[index] == "left")
         {

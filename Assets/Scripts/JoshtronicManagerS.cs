@@ -22,7 +22,7 @@ public class JoshtronicManagerS : MonoBehaviour
     {
 
 
-        //Joshtronic.AnimatronicUpdate();
+        Joshtronic.AnimatronicUpdate();
 
 
     }

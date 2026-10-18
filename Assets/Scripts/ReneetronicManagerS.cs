@@ -12,7 +12,7 @@ public class ReneetronicManagerS : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
-        Reneetronic = new AnimatronicType1(0, 3, 4, 0, 10, 4, 0, doorSprite1, doorSprite2);
+        Reneetronic = new AnimatronicType1(0, 3, 4, 0, 10, 4, 0, "Renee", doorSprite1, doorSprite2);
 
     }
 
@@ -21,7 +21,7 @@ public class ReneetronicManagerS : MonoBehaviour
     {
 
 
-        Reneetronic.AnimatronicUpdate();
+        //Reneetronic.AnimatronicUpdate();
 
 
     }

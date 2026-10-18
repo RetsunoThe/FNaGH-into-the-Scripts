@@ -12,7 +12,7 @@ public class JoshtronicManagerS : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
-        Joshtronic = new AnimatronicType1(0, 3, 4, 0, 10, 3, 0, doorSprite1, doorSprite2);
+        Joshtronic = new AnimatronicType1(0, 3, 4, 0, 10, 3, 0, "Josh", doorSprite1, doorSprite2);
 
 
     }
@@ -22,7 +22,7 @@ public class JoshtronicManagerS : MonoBehaviour
     {
 
 
-        Joshtronic.AnimatronicUpdate();
+        //Joshtronic.AnimatronicUpdate();
 
 
     }

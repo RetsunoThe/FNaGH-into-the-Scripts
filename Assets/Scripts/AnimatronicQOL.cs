@@ -21,11 +21,17 @@ public static class AnimatronicQOL
 
     public static bool atDooreEvent1(PlayerManagerS script, string maskName, string positionName)
     {
-
-        if (script.isFlashlightOn == true && script.heldObject?.name == maskName && script.hitObjectPosition?.name == positionName)
+        try
         {
-            return true;
+            if (script.isFlashlightOn == true && script.heldObject?.name == maskName && script.hitObjectPosition?.name == positionName)
+            {
+                return true;
+            }
         }
+        finally
+        {
+        }
+        
         return false;
     }
     public static bool atDooreEvent2(PlayerManagerS script, string positionName)

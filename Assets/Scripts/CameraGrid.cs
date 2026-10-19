@@ -128,7 +128,15 @@ public class CameraGrid
                 ChangePosition(currentX - 1, currentY);
                 ResetDirections();
                 return;
-            } 
+            }
+        }
+
+        if (finalX == 4 && finalY == 0 && currentX == 3 && currentY == 2) 
+        {
+            ChangePosition(currentX, currentY - 1);
+            ResetDirections();
+            return;
+            
         }
 
         //Set positions
@@ -157,8 +165,6 @@ public class CameraGrid
             ResetDirections();
             return;
         }
-
-        
 
     }
 

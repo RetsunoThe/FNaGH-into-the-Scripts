@@ -1,7 +1,8 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 
-public abstract class AnimatronicObject : MonoBehaviour
+public abstract class AnimatronicObject: MonoBehaviour
 {
 
     protected CameraGrid AnimatronicGrid;
@@ -9,13 +10,15 @@ public abstract class AnimatronicObject : MonoBehaviour
 
     protected int currentCamera;
 
-    protected int startX;
-    protected int startY;
+    protected int currentX;
+    protected int currentY;
 
     protected int endingX;
     protected int endingY;
 
+    protected int walkDelay;
     protected int baseWalkDelay;
+
     protected int difficultyLevel;
 
     protected int displayNumber;
@@ -23,54 +26,47 @@ public abstract class AnimatronicObject : MonoBehaviour
     protected int walkPattern;
 
     protected string name;
-    
 
-
-    public AnimatronicObject(int startX, int startY, int endingX, int endingY, int difficultyLevel, int displayNumber, int walkPattern, string name)
+    public AnimatronicObject(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
     {
-        this.startX = startX;
-        this.startY = startY;
-
+        this.currentX = currentX;
+        this.currentY = currentY;
         this.endingX = endingX;
         this.endingY = endingY;
 
-        this.name = name;
-
-        AnimatronicGrid = new CameraGrid(startX, startY, endingX, endingY);
-
-        this.difficultyLevel = difficultyLevel;
-        baseWalkDelay = 500;
-
-        this.displayNumber = displayNumber;
-
-        this.walkPattern = walkPattern;
-
-        
+        AnimatronicGrid = new CameraGrid(currentX, currentY, endingX, endingY);
         playerScript = GameObject.FindGameObjectWithTag("player").GetComponent<PlayerManagerS>();
 
-        RefreshCameras();
-        
+        this.difficultyLevel = difficultyLevel;
+
+        this.walkDelay = walkDelay;
+        this.baseWalkDelay = walkDelay;
+
+
+        this.displayNumber = displayNumber;
+        this.walkPattern = walkPattern;
+
+        this.name = name;
     }
 
-    protected bool DifficultyCheck()
+    protected bool WalkDelayCounter()
     {
-        if (AnimatronicQOL.random.Next(20) <= difficultyLevel)
+        //Debug.Log(walkDelay + " name");
+        if (walkDelay == 0)
         {
+            
+            RandomizeWalkDelay(1);
             return true;
         }
         else
         {
+            walkDelay -= 1;
             return false;
         }
-
-    }
-    protected int WalkDelayRandomizer()
-    {
-        int randomizer = AnimatronicQOL.random.Next(300, 501);
-        return randomizer;
     }
 
-    public void RefreshCameras()
+
+    protected void RefreshCameras()
     {
         Vector2 cameraInfo = new Vector2(AnimatronicGrid.GetCurrentX(), AnimatronicGrid.GetCurrentY());
         currentCamera = AnimatronicGrid.GetCamera(cameraInfo);
@@ -78,15 +74,15 @@ public abstract class AnimatronicObject : MonoBehaviour
         WipeAllCameras();
         CameraVisualizer();
     }
-    public void CameraVisualizer()
+    protected void CameraVisualizer()
     {
         if (currentCamera >= 0 && currentCamera <= 13)
         {
             GameObject[] cameraVisualizer = playerScript.CameraVisualizers[currentCamera].GetComponent<CameraViewManager>().CameraAnimatronics;
             cameraVisualizer[displayNumber].SetActive(true);
         }
-    }
-    public void WipeAllCameras()
+    } 
+    protected void WipeAllCameras()
     {
         GameObject[] CameraVisualizer = playerScript.CameraVisualizers;
         for (int i = 0; i < CameraVisualizer.Length; i ++)
@@ -95,25 +91,36 @@ public abstract class AnimatronicObject : MonoBehaviour
         }
     }
 
-    public void WalkPatternRandom()
+    protected void RandomizeWalkDelay(int mult3)
     {
-        if (baseWalkDelay == 0)
+        int mult1 = AnimatronicQOL.random.Next(1, 4);
+        int mult2 = AnimatronicQOL.random.Next(-1, 2);
+        walkDelay += baseWalkDelay + ((baseWalkDelay / 100) * (mult1 * 10) * mult2) * mult3;
+    }
+    protected bool DifficultyCheck()
+
+
+    {
+        int randomizer = AnimatronicQOL.random.Next(21);
+        Debug.Log("Number rolled: " + randomizer);
+        if (randomizer <= difficultyLevel)
         {
-            Debug.Log("Random " + name);
-            AnimatronicGrid.AnimatronicMovement2();
-            RefreshCameras();
-            baseWalkDelay = 500;
-            walkPattern = 0;
+            Debug.Log("Proceed");
+            return true;
         }
-        else
-        {
-            baseWalkDelay -= 1;
-        }
+        Debug.Log("Failed");
+        return false;
     }
 
-    protected void jumpscareEvent()
+    protected void WalkRandom()
     {
-        Debug.Log("YOU'RE DEAAAAAAAADD " + name);
+        AnimatronicGrid.AnimatronicMovement2();
+        RefreshCameras();
+    }
+
+    protected void JumpscareEvent()
+    {
+        Debug.Log("YOU'RE DEEEEEAD " + name);
     }
 
 }
@@ -121,406 +128,335 @@ public abstract class AnimatronicObject : MonoBehaviour
 public class AnimatronicType1 : AnimatronicObject
 {
 
-    int atDoor = 0;
     GameObject doorSprite1;
     GameObject doorSprite2;
 
+    int flagDoor = 0;
 
-    public AnimatronicType1(int startX, int startY, int endingX, int endingY, int difficultyLevel, 
-    int displayNumber, int walkPattern, string name, GameObject doorSprite1, GameObject doorSprite2)
+    static bool holdingDoor1 = false;
+    static bool holdingDoor2 = false; 
 
-    : base(startX, startY, endingX, endingY, difficultyLevel, displayNumber, walkPattern, name)
+    public AnimatronicType1(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name,
+    GameObject doorSprite1, GameObject doorSprite2)
+    : base(currentX, currentY, endingX, endingY, difficultyLevel, walkDelay, displayNumber, walkPattern, name)
     {
 
         this.doorSprite1 = doorSprite1;
         this.doorSprite2 = doorSprite2;
 
-        AnimatronicGrid.ChangePosition(startX, startY);
+        AnimatronicGrid.ChangePosition(currentX, currentY);
 
         Vector2 cameraInfo = new Vector2(AnimatronicGrid.GetCurrentX(), AnimatronicGrid.GetCurrentY());
         currentCamera = AnimatronicGrid.GetCamera(cameraInfo);
+        CameraVisualizer();
 
     }
 
-    private void WalkPatternAggressive()
+    public void RandomizeRespawn()
     {
-        //When walkDelay hits zero, the animatronic acts based on the following conditions
-        if (baseWalkDelay == 0)
+        int spawnX = 0;
+        int spawnY = 3;
+
+        int destinationX = 4;
+        int destinationY = 0;
+
+        switch (AnimatronicQOL.random.Next(7))
         {
+            case 1:     spawnX = 0;     spawnY = 3;     break;
 
-            //Given the animatronic is in the special cameras during the event of atDoor. Once
-            //walkDelay runs out the next time, it will finally check for the animatronic's
-            //jumpscare with the atDoorEvent() function.            
-            if (atDoor != 0)
-            {
-                AtDoorEvent();
-            }
+            case 2:     spawnX = 2;     spawnY = 0;     break;
 
-            //If the animmatronic is in an event camera, the atDoor event will be active and the
-            //animatronic will wait in the special camera until next walkDelay = 0
-            if (currentCamera == 0 && atDoor == 0 && CameraGrid.someoneElseAtPosition1 == false)
-            {
-                print(name + " at door");
-                CameraGrid.someoneElseAtPosition1 = true;
-                atDoor = 1;
-                currentCamera = 14;
-                baseWalkDelay = 600;
-                doorSprite1.SetActive(true);
-                WipeAllCameras();
-            }
+            case 3:     spawnX = 3;     spawnY = 4;     break;
 
-            //If the animmatronic is in an event camera, the atDoor event will be active and the
-            //animatronic will wait in the special camera until next walkDelay = 0
-            if (currentCamera == 5 && atDoor == 0 && CameraGrid.someoneElseAtPosition2 == false)
-            {
-                CameraGrid.someoneElseAtPosition2 = true;
-                atDoor = 2;
-                currentCamera = 15;
-                baseWalkDelay = 600;
-                doorSprite2.SetActive(true);
-                WipeAllCameras();
-            }
+            case 4:     spawnX = 2;     spawnY = 3;     break;
 
-            //If the animatronic isn't in any of both attack cameras, they will proceed its movement pattern normally
-            if (currentCamera != 0 || currentCamera !=5) {
-                if (atDoor == 0)
-                {
-                    AnimatronicGrid.AnimatronicMovement1();
-                    RefreshCameras();
-                    baseWalkDelay = 500;
-                }
-            }
+            case 5:     spawnX = 0;     spawnY = 2;     break;
+            
+            case 6:     spawnX = 1;     spawnY = 2;     break;
         }
-        //If the walkDelay hasn't hit zero, it will decrease the value until so
+
+        if (AnimatronicQOL.random.Next(3) == 1)
+        {
+            destinationX = 4;
+            destinationY = 0;
+        }
         else
         {
-            baseWalkDelay -= 1;
+            destinationX = 4;
+            destinationY = 2;
+        }
+
+        AnimatronicGrid.ChangePosition(spawnX, spawnY);
+        AnimatronicGrid.SetDestionation(destinationX, destinationY);
+    }
+
+    private void FlagEvent()
+    {
+        switch (flagDoor)
+        {
+            case 1:
+            if (AnimatronicQOL.atDooreEvent1(playerScript, name, "Position1"))
+            {
+                flagDoor = 0;
+                doorSprite1.SetActive(false);
+
+                RandomizeRespawn();
+                RefreshCameras();
+                RandomizeWalkDelay(2);
+                holdingDoor1 = false;
+            }
+            break;
+            
+            case 2:
+            if (AnimatronicQOL.atDooreEvent1(playerScript, name, "Position2"))
+            {
+            flagDoor = 0;
+            doorSprite2.SetActive(false);
+            RandomizeRespawn();
+            RefreshCameras();
+            RandomizeWalkDelay(2);
+            holdingDoor2 = false;
+            }
+            break;
         }
     }
 
-    private void AtDoorEvent()
+    private void WalkAggressive()
     {
-        switch (atDoor)
+        if (holdingDoor1 ==  true || holdingDoor2 == true && currentCamera == 0 || currentCamera == 5 || currentCamera == 6 || currentCamera == 1)
         {
-            case 1:
-
-                if (AnimatronicQOL.atDooreEvent1(playerScript, "Mask1", "Position1"))
-                    {
-                        AnimatronicGrid.SetCurrentX(startX);
-                        AnimatronicGrid.SetCurrentY(startY);
-                        atDoor = 0;
-                        RefreshCameras();
-                        doorSprite1.SetActive(false);
-                        CameraGrid.someoneElseAtPosition1 = false;
-                    }
-                    else
-                    {
-                    jumpscareEvent();
-                    }
-                break;
-
-            case 2:
-                if (AnimatronicQOL.atDooreEvent1(playerScript, "Mask1", "Position2"))
-                    {
-                        AnimatronicGrid.SetCurrentX(startX);
-                        AnimatronicGrid.SetCurrentY(startY);
-                        atDoor = 0;
-                        RefreshCameras();
-                        doorSprite2.SetActive(false);
-                        CameraGrid.someoneElseAtPosition2 = false;
-                    }
-                    else
-                    {
-                    jumpscareEvent();
-                    }
-   
-                break;
+            RandomizeWalkDelay(2);
         }
-        
+
+        if (flagDoor != 0)
+        {
+            JumpscareEvent();
+        }
+
+        if (currentCamera == 0 && flagDoor == 0 && holdingDoor1 == false)
+        {
+            flagDoor =  1;
+            doorSprite1.SetActive(true);
+            currentCamera = 15;
+            WipeAllCameras();
+            holdingDoor1 = true;
+            RandomizeWalkDelay(1);
+        }
+        else if (currentCamera == 5 && flagDoor == 0 && holdingDoor2 == false)
+        {
+            flagDoor = 2;
+            doorSprite2.SetActive(true);
+            currentCamera = 15;
+            WipeAllCameras();
+            holdingDoor2 = true;
+            RandomizeWalkDelay(1);
+        }
+        else
+        {
+            AnimatronicGrid.AnimatronicMovement1();
+            RefreshCameras();
+             if (AnimatronicQOL.random.Next(4) == 1)
+             {
+                 walkPattern = 2;
+            }
+        }
     }
 
     public void AnimatronicUpdate()
     {
-        switch (walkPattern)
+        if (flagDoor != 0)
         {
-            case 0:
+            FlagEvent();
+        }
 
-                if(FlagEvent())
+
+        if (WalkDelayCounter())
+        {
+            if (DifficultyCheck())
+            {
+                switch (walkPattern)
                 {
-                    WalkPatternAggressive();
+                    case 1:
+                    WalkAggressive();
+                    Debug.Log("Aggressively walking");
+                    break;
+                    
+                    case 2:
+                    WalkRandom();
+                    if (AnimatronicQOL.random.Next(3) == 1)
+                        {
+                            walkPattern = 1;
+                        }
+                    Debug.Log("Randomly walking");
+                    break;
                 }
-            break;
+            }
 
-            case 1:
-                WalkPatternRandom();
-
-            break;
+                
         }
-    }
-
-    private bool FlagEvent()
-    {
-        if (atDoor == 1)
-        {
-            AtDoorEvent();
-            return false;
-        }
-        if (currentCamera == 0 && atDoor == 0)
-        {
-            atDoor = 1;
-            baseWalkDelay = 500;
-            WipeAllCameras();
-            doorSprite1.SetActive(true);
-            return false;
-            
-        }
-        if (currentCamera == 5 && atDoor == 0)
-        {
-            atDoor = 2;
-            baseWalkDelay = 500;
-            WipeAllCameras();
-            doorSprite2.SetActive(true);
-            return false;
-        }
-        else
-        {
-            atDoor = 0;
-            return true;
-        }
+        
     }
 }
 
 
-
-
-
-
-
-
 public class AnimatronicType2 : AnimatronicObject
 {
-    AnimatronicType2 theOtherScript;
-
-    bool atOtherScript;
-
+    AnimatronicType2 otherScript;
     int agent = 0;
 
-    public AnimatronicType2(int startX, int startY, int endingX, int endingY, int difficultyLevel, 
-    int displayNumber, int walkPattern, string name)
+    bool atOtherScript = false;
+    
 
-    : base(startX, startY, endingX, endingY, difficultyLevel, displayNumber, walkPattern, name)
+    public AnimatronicType2(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
+    : base(currentX, currentY, endingX, endingY, difficultyLevel, walkDelay, displayNumber, walkPattern, name)
     {
-        this.name = name;
+
+        Vector2 cameraInfo = new Vector2(AnimatronicGrid.GetCurrentX(), AnimatronicGrid.GetCurrentY());
+        currentCamera = AnimatronicGrid.GetCamera(cameraInfo);
+        CameraVisualizer();
+
     }
 
-    public int GetAgent()
+    public void SetupScripts(AnimatronicType2 otherScript)
     {
-        return agent;
-    }
-    public void SetAgent(int value)
-    {
-        agent = value;
-    }
-
-    public void SetupScripts(AnimatronicType2 receiveScript)
-    {
-        theOtherScript = receiveScript;
-        Debug.Log(theOtherScript);
-
-        if (theOtherScript.GetAgent() == 1)
-            {
-                agent = 2;
-            }
-            else
-            {
-                agent = 1;
-            }
-
-        PositionRandomizer();
-
-        Debug.Log(GetAgent());
-            
-    }
-
-    private void WalkPatternPassive()
-    {
-        if (baseWalkDelay == 0)
+        this.otherScript = otherScript;
+        if (otherScript.agent == 1)
         {
-            Debug.Log("Passive " + name);
-            AnimatronicGrid.AnimatronicMovement1();
-            AnimatronicGrid.SetDestionation(theOtherScript.AnimatronicGrid.GetCurrentX(), theOtherScript.AnimatronicGrid.GetCurrentY());
-            RefreshCameras();
-            baseWalkDelay = 500;
-            if (AnimatronicQOL.random.Next(3) == 1)
-            {
-                walkPattern = 1;
-            }
+            agent = 2;
         }
         else
         {
-            baseWalkDelay -= 1;
+            agent = 1;
+        }
+
+        //print(agent + " " + name + " " + otherScript.agent + " " + otherScript.name);
+    }
+
+    private void WalkPassive()
+    {
+        if (atOtherScript == true)
+        {
+            JumpscareEvent();
+        }
+
+        if (atOtherScript == false)
+        {
+            AnimatronicGrid.SetDestionation(otherScript.AnimatronicGrid.GetCurrentX(), otherScript.AnimatronicGrid.GetCurrentY());
+            AnimatronicGrid.AnimatronicMovement1();
+            RefreshCameras();
+
+            if (currentCamera == otherScript.currentCamera)
+            {
+                atOtherScript = true;
+                RandomizeWalkDelay(2);
+            }
+        }
+
+    }
+    private void FlagEvent()
+    {
+        if (playerScript.isFlashlightOn == true && playerScript.cameraNumber == currentCamera)
+        {
+            RandomizeRespawn();
+            RandomizeWalkDelay(2);
+            otherScript.RandomizeWalkDelay(2);
+            atOtherScript = false;
         }
     }
 
     public void AnimatronicUpdate()
     {
-            if (agent == 1)
-            {
-                if(atOtherScript == true)
-                {
-                    if (baseWalkDelay > 0)
-                    {
-                        baseWalkDelay -= 1;
-                    }
-                    if (baseWalkDelay == 0)
-                    {
-                        CheckForJumpscare();
-                    }
-                }
-                // Debug.Log("This is agent 1 " + name);
-                if (FlagEvent())
-                {
-                    // Debug.Log("Agent 1 passed the flag");
-                    switch (walkPattern)
-                    {
-                        case 0:
-                            WalkPatternPassive();
-                            RefreshCameras();
-                        break;
-
-                        case 1:
-                            WalkPatternRandom();
-                            RefreshCameras();
-                        break;
-                
-                    }
-                }
-                else
-            {
-                if (currentCamera !=  theOtherScript.currentCamera)
-                {
-                    // Debug.Log("This is agent 2 " + name);
-                    WalkPatternRandom();
-                    walkPattern = 1;
-                }
-            }    
-        }
-    }
-
-
-
-    private bool FlagEvent()
-    {   
         if (atOtherScript == true)
         {
-            return false;
+            FlagEvent();
         }
-        if (currentCamera == theOtherScript.currentCamera && atOtherScript == false)
+
+
+        if (WalkDelayCounter())
         {
-            atOtherScript = true;
-            baseWalkDelay = 500;
-            return false;
+            if (agent == 1)
+            {
+                switch (walkPattern)
+                {
+                    case 1:
+                        WalkPassive();
+                        if (AnimatronicQOL.random.Next(4) == 1)
+                        {
+                            walkPattern = 2;
+                        }
+                    break;
+
+                    case 2:
+                    WalkRandom();
+                    if (AnimatronicQOL.random.Next(3) == 1)
+                        {
+                            walkPattern = 1;
+                        }
+                        break;
+                }
+            }
+            if (agent == 2)
+            {
+                if(AnimatronicGrid.PathfinderDistance(otherScript.AnimatronicGrid.GetCurrentX(), otherScript.AnimatronicGrid.GetCurrentY()) > 1 & 
+                otherScript.atOtherScript == false)
+                {
+                    WalkRandom();
+                    RandomizeWalkDelay(3);
+                }
+            }
             
-        }
-        else
-        {
-            atOtherScript = false;
-            return true;
         }
     }
 
-
-    private void CheckForJumpscare()
+    public void RandomizeRespawn()
     {
-        if (playerScript.inCamera == true && playerScript.isFlashlightOn == true && playerScript.cameraNumber == currentCamera)
+        int agent1X = 0;
+        int agent1Y = 3;
+
+        int agent2X = 3;
+        int agent2Y = 4;
+
+        switch (AnimatronicQOL.random.Next(11))
         {
-            PositionRandomizer();
-            atOtherScript = false;
-            baseWalkDelay = 500;
-        }
-        else
-        {
-            jumpscareEvent();
-        }
+            case 1:     agent1X = 0;        agent1Y = 3;        agent2X = 3;        agent2Y = 4;        break;
 
-    }
-    private void PositionRandomizer()
-    {
+            case 2:     agent1X = 4;        agent1Y = 0;        agent2X = 2;        agent2Y = 3;        break;
 
-        int randomizer = AnimatronicQOL.random.Next(7);
+            case 3:     agent1X = 2;        agent1Y = 0;       agent2X = 3;        agent2Y = 4;         break;
 
-        int agent1X = 1;
-        int agent1Y = 1;
+            case 4:     agent1X = 2;        agent1Y = 0;        agent2X = 0;        agent2Y = 3;        break;
 
-        int agent2X = 1;
-        int agent2Y = 1;
+            case 5:     agent1X = 2;        agent1Y = 0;        agent2X = 3;        agent2Y = 4;        break;
 
-        switch(randomizer)
-        {
-            case 1:
-            agent1X = 0;
-            agent1Y = 3;
+            case 6:     agent1X = 2;        agent1Y = 3;        agent2X = 2;        agent2Y = 0;        break;
 
-            agent2X = 4;
-            agent2Y = 2;
-            break;
+            case 7:     agent1X = 3;        agent1Y = 4;        agent2X = 0;        agent2Y = 3;        break;
 
-            case 2:
-            agent1X = 4;
-            agent1Y = 0;
+            case 8:     agent1X = 2;        agent1Y = 0;        agent2X = 3;        agent2Y = 4;        break;
 
-            agent2X = 3;
-            agent2Y = 4;
-            break;
+            case 9:     agent1X = 0;        agent1Y = 3;        agent2X = 4;        agent2Y = 2;        break;
 
-            case 3:
-            agent1X = 4;
-            agent1Y = 0;
-
-            agent2X = 0;
-            agent2Y = 3;
-            break;
-
-            case 5:
-            agent1X = 2;
-            agent1Y = 3;
-            
-            agent2X = 0;
-            agent2Y = 3;
-            break;
-
-            case 6:
-            agent1X = 3;
-            agent1Y = 4;
-            
-            agent2X = 2;
-            agent2Y = 0;
-            break;
-
-            case 4:
-            agent1X = 2;
-            agent1Y = 0;
-            
-            agent2X = 3;
-            agent2Y = 4;
-            break;
+            case 10:    agent1X = 2;        agent1Y = 0;        agent2X = 4;        agent2Y = 2;        break;
         }
 
-        if (agent == 1 && atOtherScript == true)
+        if (agent == 1)
         {
             AnimatronicGrid.ChangePosition(agent1X, agent1Y);
-            theOtherScript.AnimatronicGrid.ChangePosition(agent2X, agent2Y);
-            agent = 0;
+            otherScript.AnimatronicGrid.ChangePosition(agent2X, agent2Y);
+
+            agent = 2;
+            otherScript.agent = 1;
         }
         else
         {
             AnimatronicGrid.ChangePosition(agent2X, agent2Y);
-            theOtherScript.AnimatronicGrid.ChangePosition(agent1X, agent1Y);
-            theOtherScript.SetAgent(1);
+            otherScript.AnimatronicGrid.ChangePosition(agent1X, agent1Y);
+
+            agent = 1;
+            otherScript.agent = 2;
         }
 
         RefreshCameras();
-        theOtherScript.RefreshCameras();
-
+        otherScript.RefreshCameras();
     }
 }

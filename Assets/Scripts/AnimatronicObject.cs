@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -82,6 +84,15 @@ public abstract class AnimatronicObject: MonoBehaviour
             cameraVisualizer[displayNumber].SetActive(true);
         }
     } 
+    protected void CameraVisualizer(int currentCameraImport)
+    {
+        if (currentCameraImport >= 0 && currentCameraImport <= 13)
+        {
+            GameObject[] cameraVisualizer = playerScript.CameraVisualizers[currentCameraImport].GetComponent<CameraViewManager>().CameraAnimatronics;
+            cameraVisualizer[displayNumber].SetActive(true);
+        }
+    } 
+
     protected void WipeAllCameras()
     {
         GameObject[] CameraVisualizer = playerScript.CameraVisualizers;
@@ -102,13 +113,13 @@ public abstract class AnimatronicObject: MonoBehaviour
 
     {
         int randomizer = AnimatronicQOL.random.Next(21);
-        Debug.Log("Number rolled: " + randomizer);
+        //Debug.Log("Number rolled: " + randomizer);
         if (randomizer <= difficultyLevel)
         {
             Debug.Log("Proceed");
             return true;
         }
-        Debug.Log("Failed");
+        //Debug.Log("Failed");
         return false;
     }
 
@@ -189,34 +200,33 @@ public class AnimatronicType1 : AnimatronicObject
         AnimatronicGrid.ChangePosition(spawnX, spawnY);
         AnimatronicGrid.SetDestionation(destinationX, destinationY);
     }
-
     private void FlagEvent()
     {
-        switch (flagDoor)
+        void FlagEventSwitch(string position, GameObject doorSprite, bool holdingDoor)
         {
-            case 1:
-            if (AnimatronicQOL.atDooreEvent1(playerScript, name, "Position1"))
-            {
-                flagDoor = 0;
-                doorSprite1.SetActive(false);
-
-                RandomizeRespawn();
-                RefreshCameras();
-                RandomizeWalkDelay(2);
-                holdingDoor1 = false;
-            }
-            break;
-            
-            case 2:
-            if (AnimatronicQOL.atDooreEvent1(playerScript, name, "Position2"))
-            {
+        if(playerScript.isFlashlightOn == true && playerScript.heldObject?.name == name && playerScript.hitObjectPosition?.name == position)
+        {
             flagDoor = 0;
-            doorSprite2.SetActive(false);
+            doorSprite.SetActive(false);
             RandomizeRespawn();
             RefreshCameras();
             RandomizeWalkDelay(2);
-            holdingDoor2 = false;
-            }
+            holdingDoor = false;
+        }
+        if(playerScript.isFlashlightOn == true && playerScript.heldObject?.name != name && playerScript.hitObjectPosition?.name == position)
+        {
+            JumpscareEvent();
+        }
+    }
+        switch (flagDoor)
+        {
+            case 1:
+
+            FlagEventSwitch("Position1", doorSprite1, holdingDoor1);
+            break;
+            
+            case 2:
+            FlagEventSwitch("Position2", doorSprite2, holdingDoor2);
             break;
         }
     }
@@ -269,7 +279,6 @@ public class AnimatronicType1 : AnimatronicObject
             FlagEvent();
         }
 
-
         if (WalkDelayCounter())
         {
             if (DifficultyCheck())
@@ -278,7 +287,6 @@ public class AnimatronicType1 : AnimatronicObject
                 {
                     case 1:
                     WalkAggressive();
-                    Debug.Log("Aggressively walking");
                     break;
                     
                     case 2:
@@ -287,7 +295,6 @@ public class AnimatronicType1 : AnimatronicObject
                         {
                             walkPattern = 1;
                         }
-                    Debug.Log("Randomly walking");
                     break;
                 }
             }
@@ -297,7 +304,6 @@ public class AnimatronicType1 : AnimatronicObject
         
     }
 }
-
 
 public class AnimatronicType2 : AnimatronicObject
 {
@@ -458,5 +464,82 @@ public class AnimatronicType2 : AnimatronicObject
 
         RefreshCameras();
         otherScript.RefreshCameras();
+    }
+}
+
+public class AnimatronicType3 : AnimatronicObject
+{
+    bool isAtCamera = false;
+    int baseCameraDelay = 200;
+    int cameraDelay;
+    
+    public AnimatronicType3(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
+    : base(currentX, currentY, endingX, endingY, difficultyLevel, walkDelay, displayNumber, walkPattern, name)
+    {
+        cameraDelay = baseCameraDelay;
+
+        CameraRandomizer();
+    }
+
+    private void FlagEvent()
+    {
+        if (playerScript.cameraNumber == currentCamera)
+        {
+        if (cameraDelay > 0)
+            {
+                cameraDelay -= 1;
+            }
+            else
+            {
+            JumpscareEvent();
+            }
+        }
+        else
+        {
+            isAtCamera = false;
+            RandomizeWalkDelay(3);
+            WipeAllCameras();
+            currentCamera = -1;
+        }
+        
+    }
+
+    private void CameraRandomizer()
+    {
+        int randomCamera = AnimatronicQOL.random.Next(14);
+                if (randomCamera == playerScript.cameraNumber && randomCamera != 0)
+                {
+                    randomCamera += 1;
+                }
+                if (randomCamera == playerScript.cameraNumber && randomCamera == 0)
+                {
+                    randomCamera -= 1;
+                }
+                WipeAllCameras();
+                CameraVisualizer(randomCamera);
+    }
+
+    public void AnimatronicUpdate()
+    {
+        if (isAtCamera)
+        {
+            FlagEvent();
+        }
+
+        if (playerScript.cameraNumber == currentCamera && playerScript.inCamera == true)
+        {
+            isAtCamera = true;
+        }
+        else
+        {
+            cameraDelay = baseCameraDelay;
+
+            if (WalkDelayCounter())
+            {
+                CameraRandomizer();
+                RandomizeWalkDelay(1);
+
+            }
+        }
     }
 }

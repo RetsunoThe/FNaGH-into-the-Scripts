@@ -29,7 +29,7 @@ public abstract class AnimatronicObject: MonoBehaviour
 
     protected string name;
 
-    public AnimatronicObject(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
+    protected AnimatronicObject(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
     {
         this.currentX = currentX;
         this.currentY = currentY;
@@ -37,6 +37,22 @@ public abstract class AnimatronicObject: MonoBehaviour
         this.endingY = endingY;
 
         AnimatronicGrid = new CameraGrid(currentX, currentY, endingX, endingY);
+        playerScript = GameObject.FindGameObjectWithTag("player").GetComponent<PlayerManagerS>();
+
+        this.difficultyLevel = difficultyLevel;
+
+        this.walkDelay = walkDelay;
+        this.baseWalkDelay = walkDelay;
+
+
+        this.displayNumber = displayNumber;
+        this.walkPattern = walkPattern;
+
+        this.name = name;
+    }
+
+    protected AnimatronicObject(int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
+    {
         playerScript = GameObject.FindGameObjectWithTag("player").GetComponent<PlayerManagerS>();
 
         this.difficultyLevel = difficultyLevel;
@@ -147,13 +163,17 @@ public class AnimatronicType1 : AnimatronicObject
     static bool holdingDoor1 = false;
     static bool holdingDoor2 = false; 
 
+    string maskName;
+
     public AnimatronicType1(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name,
-    GameObject doorSprite1, GameObject doorSprite2)
+    GameObject doorSprite1, GameObject doorSprite2, string maskName)
     : base(currentX, currentY, endingX, endingY, difficultyLevel, walkDelay, displayNumber, walkPattern, name)
     {
 
         this.doorSprite1 = doorSprite1;
         this.doorSprite2 = doorSprite2;
+
+        this.maskName = maskName;
 
         AnimatronicGrid.ChangePosition(currentX, currentY);
 
@@ -204,18 +224,36 @@ public class AnimatronicType1 : AnimatronicObject
     {
         void FlagEventSwitch(string position, GameObject doorSprite, bool holdingDoor)
         {
-        if(playerScript.isFlashlightOn == true && playerScript.heldObject?.name == name && playerScript.hitObjectPosition?.name == position)
+            void FlagEventSwitchUpdate()
+            {
+                flagDoor = 0;
+                doorSprite.SetActive(false);
+                RandomizeRespawn();
+                RefreshCameras();
+                RandomizeWalkDelay(2);
+                holdingDoor = false;
+            }
+        if(maskName == null)
         {
-            flagDoor = 0;
-            doorSprite.SetActive(false);
-            RandomizeRespawn();
-            RefreshCameras();
-            RandomizeWalkDelay(2);
-            holdingDoor = false;
-        }
-        if(playerScript.isFlashlightOn == true && playerScript.heldObject?.name != name && playerScript.hitObjectPosition?.name == position)
+            if(playerScript.isFlashlightOn == true && playerScript.heldObject == null && playerScript.hitObjectPosition?.name == position)
+            {
+                FlagEventSwitchUpdate();
+            }
+            if(playerScript.isFlashlightOn == true && playerScript.heldObject != null && playerScript.hitObjectPosition?.name == position)
+            {
+                JumpscareEvent();
+            }
+        }   
+        else if (maskName != null)
         {
-            JumpscareEvent();
+            if(playerScript.isFlashlightOn == true && playerScript.heldObject?.name == maskName && playerScript.hitObjectPosition?.name == position)
+            {
+                FlagEventSwitchUpdate();
+            }
+            if(playerScript.isFlashlightOn == true && playerScript.heldObject?.name != maskName && playerScript.hitObjectPosition?.name == position)
+            {
+                JumpscareEvent();
+            }
         }
     }
         switch (flagDoor)
@@ -473,12 +511,39 @@ public class AnimatronicType3 : AnimatronicObject
     int baseCameraDelay = 200;
     int cameraDelay;
     
-    public AnimatronicType3(int currentX, int currentY, int endingX, int endingY, int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
-    : base(currentX, currentY, endingX, endingY, difficultyLevel, walkDelay, displayNumber, walkPattern, name)
+    public AnimatronicType3(int difficultyLevel, int walkDelay, int displayNumber, int walkPattern, string name)
+    : base(difficultyLevel, walkDelay, displayNumber, walkPattern, name)
     {
         cameraDelay = baseCameraDelay;
+        currentCamera = -1;
 
         CameraRandomizer();
+    }
+
+    public void AnimatronicUpdate()
+    {
+
+        if (isAtCamera)
+        {
+            FlagEvent();
+        }
+
+        if (playerScript.cameraNumber == currentCamera && playerScript.inCamera == true)
+        {
+            
+            isAtCamera = true;
+        }
+        else
+        {
+            cameraDelay = baseCameraDelay;
+
+            if (WalkDelayCounter())
+            {
+                CameraRandomizer();
+                RandomizeWalkDelay(1);
+
+            }
+        }
     }
 
     private void FlagEvent()
@@ -515,31 +580,10 @@ public class AnimatronicType3 : AnimatronicObject
                 {
                     randomCamera -= 1;
                 }
+                currentCamera = randomCamera;
                 WipeAllCameras();
                 CameraVisualizer(randomCamera);
     }
 
-    public void AnimatronicUpdate()
-    {
-        if (isAtCamera)
-        {
-            FlagEvent();
-        }
-
-        if (playerScript.cameraNumber == currentCamera && playerScript.inCamera == true)
-        {
-            isAtCamera = true;
-        }
-        else
-        {
-            cameraDelay = baseCameraDelay;
-
-            if (WalkDelayCounter())
-            {
-                CameraRandomizer();
-                RandomizeWalkDelay(1);
-
-            }
-        }
-    }
+    
 }

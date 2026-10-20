@@ -7,6 +7,8 @@ public class AnimatronicManagerS : MonoBehaviour
     [SerializeField] private GameObject doorSprite2Josh;
     [SerializeField] private GameObject doorSprite1Renee;
     [SerializeField] private GameObject doorSprite2Renee;
+    [SerializeField] private GameObject doorSprite1Shelby;
+    [SerializeField] private GameObject doorSprite2Shelby;
 
     AnimatronicType1 Joshtronic;
     AnimatronicType1 Reneetronic;
@@ -26,6 +28,10 @@ public class AnimatronicManagerS : MonoBehaviour
     AnimatronicType3 Cherrytronic;
 
 
+
+    //AnimatronicType4 Lilytronic;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
@@ -35,9 +41,9 @@ public class AnimatronicManagerS : MonoBehaviour
 
 
 
-        Joshtronic = new AnimatronicType1(0, 3, 4, 0, 10, 1000, 3, 1, "Josh", doorSprite1Josh, doorSprite2Josh);
-        Reneetronic = new AnimatronicType1(0, 3, 4, 2, 10, 1000, 4, 1, "Renee", doorSprite1Renee, doorSprite2Renee);
-        //Shelbytronic = new AnimatronicType1(0, 3, 4, 2, 10, 1000, 4, 1, "Shelby", doorSprite1Renee, doorSprite2Renee);
+        Joshtronic = new AnimatronicType1(0, 3, 4, 0, 10, 1000, 3, 1, "Josh", doorSprite1Josh, doorSprite2Josh, "JoshMask");
+        Reneetronic = new AnimatronicType1(0, 3, 4, 2, 10, 1000, 4, 1, "Renee", doorSprite1Renee, doorSprite2Renee, "ReneeMask");
+        Shelbytronic = new AnimatronicType1(0, 3, 4, 2, 10, 1000, 2, 1, "Shelby", doorSprite1Shelby, doorSprite2Shelby, null);
         //Joshtronic.RandomizeRespawn();
         //Reneetronic.RandomizeRespawn();
 
@@ -52,12 +58,12 @@ public class AnimatronicManagerS : MonoBehaviour
 
 
 
-        Cherrytronic = new AnimatronicType3(0, 0, 0, 0, 10, 500, 0, 1, "Cherry");
+        Cherrytronic = new AnimatronicType3(10, 500, 0, 1, "Cherry");
 
 
 
 
-
+        //Lilytronic = new AnimatronicType4();
 
     }
 
@@ -73,7 +79,7 @@ public class AnimatronicManagerS : MonoBehaviour
 
         Joshtronic.AnimatronicUpdate();
         Reneetronic.AnimatronicUpdate();
-        //Shelbytronic.AnimatronicUpdate();
+        Shelbytronic.AnimatronicUpdate();
 
 
 
@@ -87,3 +93,7 @@ public class AnimatronicManagerS : MonoBehaviour
 
     }
 }
+
+
+
+

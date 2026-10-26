@@ -587,3 +587,13 @@ public class AnimatronicType3 : AnimatronicObject
 
     
 }
+
+
+
+public class AnimatronicType4
+{
+    public AnimatronicType4()
+    {
+        
+    }
+}

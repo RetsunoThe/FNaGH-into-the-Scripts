@@ -1,23 +1,16 @@
 using UnityEngine;
 
-public class LarktronicManager : MonoBehaviour
+public class RaycastObjectS : MonoBehaviour
 {
-
-
-
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    private void Start()
+    void Start()
     {
-
         
-
     }
 
     // Update is called once per frame
-    private void Update()
+    void Update()
     {
-
-
-
+        
     }
 }

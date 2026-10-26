@@ -1,14 +1,23 @@
 
 using System;
+using System.Collections;
 using NUnit.Framework;
 using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting.ReorderableList.Element_Adder_Menu;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class PlayerManagerS : MonoBehaviour
 {
+
+    [SerializeField] PlayerMovementS playerMovement; 
+    private bool messageAssistance = true;
+
+    private Coroutine Coroutine;
+    private Coroutine Coroutine1;
 
     //Holding Objects
     public bool holdingObject = false;
@@ -35,7 +44,7 @@ public class PlayerManagerS : MonoBehaviour
     private Vector2 _moveInput;
 
     //PlayerWalk
-    bool canWalk = true;
+    //bool playerMovement.canWalk = true;
     [SerializeField] private Transform PlayerCamera;
     Vector3 test = new Vector3(0, 0, 0);
     bool isGrounded;
@@ -59,9 +68,12 @@ public class PlayerManagerS : MonoBehaviour
 
     //Flashlight
     public bool isFlashlightOn = false;
+    
 
 
     [SerializeField] private TextMeshProUGUI messageDisplay;
+    [SerializeField] private TextMeshProUGUI messageDisplay1;
+    
 
 
     //Camera Display
@@ -78,16 +90,35 @@ public class PlayerManagerS : MonoBehaviour
     private void Start()
     {
         Canvas.SetActive(false);
-        Cursor.lockState = CursorLockMode.Locked;
+        UnityEngine.Cursor.lockState = CursorLockMode.Locked;
 
+        
+        messageDisplay.alpha = 0;
+        messageDisplay1.alpha = 0;
+
+        playerMovement = GetComponent<PlayerMovementS>();
+
+    }
+
+    private void MessageAssistance(string message)
+    {
+        messageDisplay1.text = message;
+
+        if (Coroutine1 != null) StopCoroutine(Coroutine1);
+            Coroutine1 = StartCoroutine(MessageAnimation(messageDisplay1, 1));
     }
 
     private void Update()
     {
 
+        transform.position = transform.position + new Vector3(0, 10, 0);
+        //if (hitObject != null) hitObject.GetComponent<RaycastActionS>().DetermineAction();
+
         if (inCamera == true)
         {
             CameraVisualizer();
+
+            if(messageAssistance == true) MessageAssistance("Press RBM to leave cameras");
         }
         else
         {
@@ -110,12 +141,23 @@ public class PlayerManagerS : MonoBehaviour
         //Walking
 
         isGrounded = _characterController.isGrounded;
-        if (canWalk == true)
+
+        if(messageAssistance == true)
         {
-            //PlayerWalk();
-            HandleGravity();
-            HandleMovement();
+            if(inPosition == true && inCamera == false)
+            {
+                MessageAssistance("Press RBM to leave position");
+            }
+            if(inCamera == true)
+            {
+                MessageAssistance("Press RBM to leave cameras");
+            }
+            if(holdingObject == true)
+            {
+                MessageAssistance("Press E to drop object");
+            }
         }
+
 
         //Return from position
         if (inPosition == true && inCamera == false && Mouse.current.rightButton.wasPressedThisFrame)
@@ -124,15 +166,24 @@ public class PlayerManagerS : MonoBehaviour
 
             transform.position = _inPositionReturn.transform.position;
 
+            print(hitObject.name);
+
+            
+
+            if (hitObject.name == "Door1")
+                {
+                    hitObject.GetComponent<DoorAnimation>().DoorHolder.GetComponent<DoorAnimation>().CallAnimationClose();
+                }
+
             hitObjectPosition = null;
             hitObjectS = null;
 
             inPosition = false;
-            canWalk = true;
+            playerMovement.canWalk = true;
         }
 
         //Moving animation
-        if (moveTowards != null && canWalk == false && inCamera == false)
+        if (moveTowards != null && playerMovement.canWalk == false && inCamera == false)
         {
             transform.position = moveTowards;
             moveTowards = Vector3.MoveTowards(transform.position, hitObjectPosition.transform.position, 1);
@@ -146,7 +197,7 @@ public class PlayerManagerS : MonoBehaviour
             transform.position = computerChair.position;
             
             Canvas.SetActive(false);
-            Cursor.lockState = CursorLockMode.Locked;
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
 
             inCamera = false;
         }
@@ -213,6 +264,20 @@ public class PlayerManagerS : MonoBehaviour
 
 
 
+    // private void Raycast()
+    // {
+    //     RaycastHit hit;
+
+    //     if(Physics.Raycast(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward),out hit, 7, RaycastMask))
+    //     {
+    //         hitObject = hit.collider.gameObject;
+
+    //         hitObject.GetComponent<RaycastActionS>().DetermineAction();
+    //     }
+    // }
+
+
+
 
     private void RayCast()
     {
@@ -222,6 +287,12 @@ public class PlayerManagerS : MonoBehaviour
         if(Physics.Raycast(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward), out hit, 7, RaycastMask))
         {
             hitObject = hit.collider.gameObject;
+
+             RayCastMessage message = hitObject.GetComponent<RayCastMessage>();
+            messageDisplay1.text = message.raycastMessageHover; 
+
+            if(messageAssistance == true && inPosition == false) MessageAssistance(message.raycastMessageHover);
+
 
             Debug.DrawRay(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
 
@@ -235,9 +306,16 @@ public class PlayerManagerS : MonoBehaviour
                 
                 //transform.position = hitObject.transform.position;
                 inPosition = true;
-                canWalk = false;
+                playerMovement.canWalk = false;
                 inMovement = true;
                 moveTowards = Vector3.MoveTowards(transform.position, hitObject.transform.position, 1);
+
+                if (Coroutine1 != null) StopCoroutine(Coroutine1);
+
+                if (hitObject.name == "Door1")
+                {
+                    hitObject.GetComponent<DoorAnimation>().DoorHolder.GetComponent<DoorAnimation>().CallAnimationOpen();
+                }
             }
 
             if (Mouse.current.leftButton.wasPressedThisFrame && inPosition == true && inCamera == false && hitObject.tag == "puter")
@@ -245,8 +323,10 @@ public class PlayerManagerS : MonoBehaviour
                 inCamera = true;
                 cameraNumber = lastCameraNumber;
                 Canvas.SetActive(true);
-                Cursor.lockState = CursorLockMode.None;
+                UnityEngine.Cursor.lockState = CursorLockMode.None;
                 computerChair = transform;
+
+                if (Coroutine1 != null) StopCoroutine(Coroutine1);
             }
 
             if (Keyboard.current.eKey.wasPressedThisFrame && inPosition == false && holdingObject == false && hitObject.tag == "grabObject")
@@ -258,14 +338,22 @@ public class PlayerManagerS : MonoBehaviour
                 }
                 heldObjectReturn = heldObject.transform.position;
                 holdingObject = true;
+
+                if (Coroutine1 != null) StopCoroutine(Coroutine1);
                 
             }
 
             if (Keyboard.current.eKey.wasPressedThisFrame && inPosition == false && holdingObject == false && hitObject.tag == "loreObject")
             {
-                RayCastMessage message = hitObject.GetComponent<RayCastMessage>();
-                messageDisplay.text = message.raycastMessage; 
-                print("babababa");
+                RayCastMessage message1 = hitObject.GetComponent<RayCastMessage>();
+                messageDisplay.text = message1.raycastMessage; 
+
+
+                if (Coroutine != null) StopCoroutine(Coroutine);
+                
+                Coroutine = StartCoroutine(MessageAnimation(messageDisplay, 4));
+
+                if (Coroutine1 != null) StopCoroutine(Coroutine1);
                 
             }
 
@@ -281,31 +369,28 @@ public class PlayerManagerS : MonoBehaviour
 
     }
 
-    private void PlayerWalk()
+    private IEnumerator MessageAnimation(TextMeshProUGUI display, float duration)
     {
-        if (Keyboard.current.wKey.isPressed)
-        {
-            test += PlayerCamera.forward * walkSpeed;
-        }
-        if (Keyboard.current.sKey.isPressed)
-        {
-            test -= PlayerCamera.forward * walkSpeed;
-        }
-
-        if (Keyboard.current.aKey.isPressed)
-        {
-            test -= PlayerCamera.right * walkSpeed;
-        }
-        if (Keyboard.current.dKey.isPressed)
-        {
-            test += PlayerCamera.right * walkSpeed;
-        }
-        test.y = 0;
-        transform.position += test * Time.deltaTime * walkSpeed;
-
-        test = new Vector3(0, 0, 0);
+        yield return Fade(1f, 0f, duration, display);
     }
-    
+
+    private IEnumerator Fade(float from, float to, float duration, TextMeshProUGUI display)
+    {
+        float t = 0f;
+
+        {
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                display.alpha = Mathf.Lerp(from, to, t / duration);
+                yield return null;
+            }
+            display.alpha = to;
+        }
+
+        
+    }
+
 
     private void CameraVisualizer()
     {
@@ -328,3 +413,5 @@ public class PlayerManagerS : MonoBehaviour
         cameraNumber = camera;
     }
 }
+
+

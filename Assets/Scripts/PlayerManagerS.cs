@@ -6,6 +6,7 @@ using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting.ReorderableList.Element_Adder_Menu;
 using UnityEngine;
+using UnityEngine.Assemblies;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -205,6 +206,14 @@ public class PlayerManagerS : MonoBehaviour
         }
 
         //Holding Objects
+
+        if(!Keyboard.current.eKey.isPressed && heldObject != null && holdingObject == false)
+        {
+            holdingObject = true;
+        }
+
+
+
         if (holdingObject == true)
         {
             heldObject.transform.position = PlayerCamera.transform.position  + (PlayerCamera.transform.forward * 1) + ((PlayerCamera.transform.right * 1)/2);
@@ -306,7 +315,7 @@ public class PlayerManagerS : MonoBehaviour
                     heldObject.GetComponent<BoxCollider>().enabled = false;
                 }
                 heldObjectReturn = heldObject.transform.position;
-                holdingObject = true;
+                //holdingObject = true;
 
                 if (Coroutine1 != null) StopCoroutine(Coroutine1);
                 

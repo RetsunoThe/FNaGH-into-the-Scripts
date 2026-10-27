@@ -22,11 +22,10 @@ public class PlayerMovementS : MonoBehaviour
     public float defaultHeight = 2f;
     public float crouchHeight = 1f;
 
-    private CharacterController characterController;
+    public CharacterController characterController;
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0f;
     public bool canMove = true;
-    public bool canWalk = true;
 
     void Start()
     {
@@ -43,13 +42,13 @@ public class PlayerMovementS : MonoBehaviour
 
         // --- Input ---
         Vector2 moveInput = Vector2.zero;
-        if (canWalk)
-        {
-            if (keyboard.wKey.isPressed) moveInput.y += 1f;
-            if (keyboard.sKey.isPressed) moveInput.y -= 1f;
-            if (keyboard.dKey.isPressed) moveInput.x += 1f;
-            if (keyboard.aKey.isPressed) moveInput.x -= 1f;
-        }
+
+        
+        if (keyboard.wKey.isPressed) moveInput.y += 1f;
+        if (keyboard.sKey.isPressed) moveInput.y -= 1f;
+        if (keyboard.dKey.isPressed) moveInput.x += 1f;
+        if (keyboard.aKey.isPressed) moveInput.x -= 1f;
+        
         
         moveInput = Vector2.ClampMagnitude(moveInput, 1f);
 
@@ -80,9 +79,13 @@ public class PlayerMovementS : MonoBehaviour
         moveDirection.y = verticalVelocity;
 
         // --- Crouch ---
-        characterController.height = isCrouching ? crouchHeight : defaultHeight;
 
-        characterController.Move(moveDirection * Time.deltaTime);
+        if (characterController.enabled == true)
+        {
+            characterController.height = isCrouching ? crouchHeight : defaultHeight;
+
+            characterController.Move(moveDirection * Time.deltaTime);
+        }
 
         // --- Look ---
         if (canMove)

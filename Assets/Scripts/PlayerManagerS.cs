@@ -10,8 +10,15 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
+//If you're reading this code I'm sorry lol
+//I tried rewritting this more organized but it was really hard because some variables in here are
+//Deeply ingraned into other scripts and I felt like this was good enough for a simple fnaf game
+
+
 public class PlayerManagerS : MonoBehaviour
 {
+
+    GameObject hitObjectSaved;
 
     [SerializeField] PlayerMovementS playerMovement; 
     private bool messageAssistance = true;
@@ -44,7 +51,7 @@ public class PlayerManagerS : MonoBehaviour
     private Vector2 _moveInput;
 
     //PlayerWalk
-    //bool playerMovement.canWalk = true;
+    //bool playerMovement.characterController.enabled = true;
     [SerializeField] private Transform PlayerCamera;
     Vector3 test = new Vector3(0, 0, 0);
     bool isGrounded;
@@ -111,9 +118,6 @@ public class PlayerManagerS : MonoBehaviour
     private void Update()
     {
 
-        transform.position = transform.position + new Vector3(0, 10, 0);
-        //if (hitObject != null) hitObject.GetComponent<RaycastActionS>().DetermineAction();
-
         if (inCamera == true)
         {
             CameraVisualizer();
@@ -166,24 +170,21 @@ public class PlayerManagerS : MonoBehaviour
 
             transform.position = _inPositionReturn.transform.position;
 
-            print(hitObject.name);
-
-            
-
-            if (hitObject.name == "Door1")
+            if (hitObjectSaved.name == "Door1")
                 {
-                    hitObject.GetComponent<DoorAnimation>().DoorHolder.GetComponent<DoorAnimation>().CallAnimationClose();
+                    hitObjectSaved.GetComponent<DoorAnimation>().DoorHolder.GetComponent<DoorAnimation>().CallAnimationClose();
                 }
 
+            hitObjectSaved = null;
             hitObjectPosition = null;
             hitObjectS = null;
 
             inPosition = false;
-            playerMovement.canWalk = true;
+            playerMovement.characterController.enabled = true;
         }
 
         //Moving animation
-        if (moveTowards != null && playerMovement.canWalk == false && inCamera == false)
+        if (moveTowards != null && playerMovement.characterController.enabled == false && inCamera == false)
         {
             transform.position = moveTowards;
             moveTowards = Vector3.MoveTowards(transform.position, hitObjectPosition.transform.position, 1);
@@ -200,6 +201,7 @@ public class PlayerManagerS : MonoBehaviour
             UnityEngine.Cursor.lockState = CursorLockMode.Locked;
 
             inCamera = false;
+            UnityEngine.Cursor.visible = false;
         }
 
         //Holding Objects
@@ -241,43 +243,6 @@ public class PlayerManagerS : MonoBehaviour
         _moveInput = context.ReadValue<Vector2>();
     }
 
-    private void HandleMovement()
-    {
-        var move = PlayerCamera.TransformDirection(new Vector3(_moveInput.x, 0, _moveInput.y)).normalized;
-        var currentSpeed = walkSpeed;
-        var finalMove = move * currentSpeed;
-        finalMove.y = verticalVelocity;
-
-        _characterController.Move(finalMove * Time.deltaTime);
-
-    }
-
-    private void HandleGravity()
-    {
-        if (isGrounded && verticalVelocity < 0)
-        {
-            verticalVelocity = initialFallValue;
-        }
-
-        verticalVelocity += gravity * Time.deltaTime;
-    }
-
-
-
-    // private void Raycast()
-    // {
-    //     RaycastHit hit;
-
-    //     if(Physics.Raycast(PlayerCamera.position, PlayerCamera.TransformDirection(Vector3.forward),out hit, 7, RaycastMask))
-    //     {
-    //         hitObject = hit.collider.gameObject;
-
-    //         hitObject.GetComponent<RaycastActionS>().DetermineAction();
-    //     }
-    // }
-
-
-
 
     private void RayCast()
     {
@@ -288,7 +253,7 @@ public class PlayerManagerS : MonoBehaviour
         {
             hitObject = hit.collider.gameObject;
 
-             RayCastMessage message = hitObject.GetComponent<RayCastMessage>();
+             RaycastManagerS message = hitObject.GetComponent<RaycastManagerS>();
             messageDisplay1.text = message.raycastMessageHover; 
 
             if(messageAssistance == true && inPosition == false) MessageAssistance(message.raycastMessageHover);
@@ -300,13 +265,14 @@ public class PlayerManagerS : MonoBehaviour
             {
                 if (hitObject.tag == "goPosition")
                 {
+                    hitObjectSaved = hitObject;
                     hitObjectS = hitObject.GetComponent<inPositionS>();
                     hitObjectPosition = hitObjectS.inPositionGo;
                 }
                 
                 //transform.position = hitObject.transform.position;
                 inPosition = true;
-                playerMovement.canWalk = false;
+                playerMovement.characterController.enabled = false;
                 inMovement = true;
                 moveTowards = Vector3.MoveTowards(transform.position, hitObject.transform.position, 1);
 
@@ -323,6 +289,9 @@ public class PlayerManagerS : MonoBehaviour
                 inCamera = true;
                 cameraNumber = lastCameraNumber;
                 Canvas.SetActive(true);
+                UnityEngine.Cursor.visible = true;
+                
+                
                 UnityEngine.Cursor.lockState = CursorLockMode.None;
                 computerChair = transform;
 
@@ -345,7 +314,7 @@ public class PlayerManagerS : MonoBehaviour
 
             if (Keyboard.current.eKey.wasPressedThisFrame && inPosition == false && holdingObject == false && hitObject.tag == "loreObject")
             {
-                RayCastMessage message1 = hitObject.GetComponent<RayCastMessage>();
+                RaycastManagerS message1 = hitObject.GetComponent<RaycastManagerS>();
                 messageDisplay.text = message1.raycastMessage; 
 
 
@@ -413,5 +382,3 @@ public class PlayerManagerS : MonoBehaviour
         cameraNumber = camera;
     }
 }
-
-

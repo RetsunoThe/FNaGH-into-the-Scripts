@@ -1,7 +1,9 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class RayCastMessage : MonoBehaviour
+public class RaycastManagerS : MonoBehaviour
 {
     public string raycastMessage;
     public string raycastMessageHover;
+
 }

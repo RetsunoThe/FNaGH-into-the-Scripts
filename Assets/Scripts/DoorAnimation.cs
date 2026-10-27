@@ -4,11 +4,14 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
+
+
 public class DoorAnimation : MonoBehaviour
 {
     public GameObject DoorHolder;
 
-    public float openAngle; 
+    float openAngle; 
     public float openSpeed = 4f;
     public bool isOpen = false;
 
@@ -43,7 +46,7 @@ public class DoorAnimation : MonoBehaviour
         closedRotation = transform.rotation;
         openRotation = (Quaternion.Euler(transform.eulerAngles + new Vector3(0, openAngle, 0)));
 
-        openAngle = -1;
+        openAngle = 45;
 
         if (currentCoroutine != null) StopCoroutine(currentCoroutine);
         currentCoroutine = StartCoroutine(ToggleDoor());
